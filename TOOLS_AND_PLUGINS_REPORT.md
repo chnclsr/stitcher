@@ -43,8 +43,13 @@ stick.ai turns a photo into a transparent cutout. Users can optionally describe 
 ### Codex skills and plugin status
 
 - `design-taste-frontend`: local frontend design skill used to guide the visual redesign. Its upstream source is [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill).
+- `pr-lens`: local Codex skill for visualizing code changes and architecture. User identified it as part of this project workflow; architecture and lifecycle diagrams live in `docs/diagrams`.
+- Diagram design tools: used to create and refine the architecture, object-guidance, and lifecycle diagrams in `docs/diagrams`. Plugin search found `tldraw`, `Whimsical`, `Miro`, `Figma/FigJam`, and `MagicPath` as available but not installed; the exact “Diagram Designer” product was not identifiable.
+- Open Design / Open CoDesign: open-source design/prototyping option discussed during design research. The repo is reference-only, not integrated into stick.ai. See [OpenCoworkAI/open-codesign](https://github.com/OpenCoworkAI/open-codesign).
 - `caveman`: response-style skill used for concise communication. It does not affect the app runtime.
-- No separate ADHD-specific plugin or other marketplace plugin installation is verified in the project. Capacitor plugins above are app dependencies, not Codex plugins.
+- `I Have ADHD`: user-requested focus/workflow aid. No matching installed or available plugin appeared in plugin search; connection cannot be verified.
+- Research tool: built-in web search used for product and provider research, including design options and fal API/model information. Research plugins such as `Consensus`, `Scite`, `Exa`, `Tavily`, `Firecrawl`, and `Parallel Search` appeared as available, not installed.
+- Catalog status checked 12 October 2026. Plugin search results are not proof of installation or prior use. Capacitor plugins above are app dependencies, not Codex plugins.
 
 ## GitHub repositories
 
@@ -52,6 +57,7 @@ stick.ai turns a photo into a transparent cutout. Users can optionally describe 
 | --- | --- | --- |
 | [chnclsr/stitcher](https://github.com/chnclsr/stitcher) | Main stick.ai app, Android wrapper, backend proxy, docs, and diagrams. | Working branch: `developments`; current remote is `origin`. |
 | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) | Upstream source for the frontend design skill. | Reference/source repository; not the app repository. |
+| [OpenCoworkAI/open-codesign](https://github.com/OpenCoworkAI/open-codesign) | Open-source design/prototyping option mentioned earlier. | Reference only; not integrated into stick.ai. |
 
 ## Data flow
 
