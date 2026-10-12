@@ -47,6 +47,30 @@ test("remove endpoint passes through transparent PNG bytes", async () => {
   assert.equal(decoded.data[3], 0);
 });
 
+test("remove endpoint passes an optional object description", async () => {
+  let receivedTarget: string | undefined;
+  const response = await request(createApp(async (_photo, targetObject) => {
+    receivedTarget = targetObject;
+    return transparentPng;
+  }))
+    .post("/api/remove-background")
+    .field("targetObject", "  the red mug near the back  ")
+    .attach("photo", jpegFixture, { filename: "room.jpg", contentType: "image/jpeg" });
+
+  assert.equal(response.status, 200);
+  assert.equal(receivedTarget, "the red mug near the back");
+});
+
+test("remove endpoint rejects oversized object descriptions", async () => {
+  const response = await request(createApp(async () => transparentPng))
+    .post("/api/remove-background")
+    .field("targetObject", "x".repeat(121))
+    .attach("photo", jpegFixture, { filename: "room.jpg", contentType: "image/jpeg" });
+
+  assert.equal(response.status, 400);
+  assert.match(response.body.error, /120 characters or fewer/i);
+});
+
 test("remove endpoint rejects a missing image", async () => {
   const response = await request(createApp()).post("/api/remove-background");
   assert.equal(response.status, 400);

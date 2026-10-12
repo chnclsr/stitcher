@@ -1,8 +1,9 @@
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "";
 
-export async function removeBackground(photo: Blob): Promise<Blob> {
+export async function removeBackground(photo: Blob, targetObject = ""): Promise<Blob> {
   const form = new FormData();
   form.append("photo", photo, "stitcher-capture.jpg");
+  if (targetObject.trim()) form.append("targetObject", targetObject.trim());
 
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 135_000);

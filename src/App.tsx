@@ -26,6 +26,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [targetObject, setTargetObject] = useState("");
   const [theme, setTheme] = useState<Theme>(() => localStorage.getItem("stitcher-theme") === "dark" ? "dark" : "light");
   const cameraInput = useRef<HTMLInputElement>(null);
   const [stickerPreviewUrl, setStickerPreviewUrl] = useState("");
@@ -77,6 +78,7 @@ export default function App() {
   function chooseImage(image: Blob) {
     setSource(image);
     setCutout(null);
+    setTargetObject("");
     setError("");
     setScreen("review");
   }
@@ -100,7 +102,7 @@ export default function App() {
     const started = performance.now();
     const timer = window.setInterval(() => setElapsed(Math.floor((performance.now() - started) / 1000)), 250);
     try {
-      setCutout(await removeBackground(source));
+      setCutout(await removeBackground(source, targetObject));
       setScreen("result");
     } catch (reason) {
       setError(message(reason));
@@ -126,6 +128,7 @@ export default function App() {
   function reset() {
     setSource(null);
     setCutout(null);
+    setTargetObject("");
     setError("");
     setScreen("capture");
   }
@@ -159,7 +162,7 @@ export default function App() {
 
         {screen === "review" && sourceUrl && <div className="result-layout">
           <div className="preview-panel"><span className="preview-label">YOUR PHOTO</span><img className="photo-preview" src={sourceUrl} alt="Photo to turn into a sticker" /></div>
-          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><button className="button button-primary full-button" onClick={makeCutout}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message">{error}</p>}</div>
+          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><label className="target-field-label" htmlFor="target-object">What should stay? <span>Optional</span></label><input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder="e.g. the red mug near the back" aria-describedby="target-object-hint" /><p id="target-object-hint" className="field-hint">Name one or more items. Prompted cutouts cost $0.03 per image; without a prompt, $0.018.</p><button className="button button-primary full-button" onClick={makeCutout}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message">{error}</p>}</div>
         </div>}
 
         {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>✳</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your object…</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s · securely processed through our server</small></div>}

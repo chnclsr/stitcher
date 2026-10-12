@@ -8,10 +8,11 @@ const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MODEL = "fal-ai/bria/background/remove";
 const OUTPUT_LIMIT = 25 * 1024 * 1024;
 const FAL_TIMEOUT_MS = 120_000;
+const MAX_TARGET_LENGTH = 120;
 
-export type RemoveBackground = (photo: Express.Multer.File) => Promise<Buffer>;
+export type RemoveBackground = (photo: Express.Multer.File, targetObject?: string) => Promise<Buffer>;
 
-async function removeWithFal(photo: Express.Multer.File): Promise<Buffer> {
+async function removeWithFal(photo: Express.Multer.File, targetObject?: string): Promise<Buffer> {
   const apiKey = process.env.FAL_KEY;
   if (!apiKey) throw new Error("FAL_KEY is not configured.");
 
@@ -32,7 +33,10 @@ async function removeWithFal(photo: Express.Multer.File): Promise<Buffer> {
     const imageUrl = await Promise.race([fal.storage.upload(file), deadline]);
     const result = await Promise.race([
       fal.subscribe(MODEL, {
-        input: { image_url: imageUrl },
+        input: {
+          image_url: imageUrl,
+          ...(targetObject ? { prompt: `Keep only ${targetObject}.` } : {}),
+        },
         abortSignal: abortController.signal,
       }),
       deadline,
@@ -134,8 +138,19 @@ export function createApp(removeBackground: RemoveBackground = removeWithFal) {
         return;
       }
 
+      const rawTargetObject = request.body?.targetObject;
+      if (rawTargetObject !== undefined && typeof rawTargetObject !== "string") {
+        response.status(400).json({ error: "Object description must be plain text." });
+        return;
+      }
+      const targetObject = rawTargetObject?.trim();
+      if (targetObject && targetObject.length > MAX_TARGET_LENGTH) {
+        response.status(400).json({ error: `Object description must be ${MAX_TARGET_LENGTH} characters or fewer.` });
+        return;
+      }
+
       try {
-        const png = await removeBackground(request.file);
+        const png = await removeBackground(request.file, targetObject || undefined);
         response
           .status(200)
           .set({ "Content-Type": "image/png", "Cache-Control": "no-store" })
