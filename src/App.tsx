@@ -29,6 +29,12 @@ const samplePhotos = [
   { name: "Craft table", src: new URL("../test-photos/10_craft_art_desk.jpg", import.meta.url).href },
   { name: "Picnic gear", src: new URL("../test-photos/11_picnic_summer_gear.jpg", import.meta.url).href },
   { name: "Everyday carry", src: new URL("../test-photos/12_edc_gear_tray.jpg", import.meta.url).href },
+  { name: "Vintage Vespa", src: new URL("../test-photos/13_vintage_vespa_scooter.jpg", import.meta.url).href },
+  { name: "Street cat", src: new URL("../test-photos/14_mediterranean_street_cat.jpg", import.meta.url).href },
+  { name: "Vintage Beetle", src: new URL("../test-photos/15_classic_vw_beetle.jpg", import.meta.url).href },
+  { name: "City bicycle", src: new URL("../test-photos/16_vintage_bicycle_brick.jpg", import.meta.url).href },
+  { name: "Skateboard", src: new URL("../test-photos/17_street_skateboard.jpg", import.meta.url).href },
+  { name: "Hiking trail", src: new URL("../test-photos/18_hiking_mountain_trail.jpg", import.meta.url).href },
 ];
 
 export default function App() {
