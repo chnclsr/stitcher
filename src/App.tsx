@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Camera, DownloadSimple, LockKey, Moon, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
+import { ArrowRight, Camera, DownloadSimple, LockKey, Moon, Scissors, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
 import { captureImage } from "./platform/camera";
 import { saveImage } from "./platform/save";
 import { shareImage } from "./platform/share";
@@ -16,6 +16,12 @@ const samplePhotos = [
   { name: "Succulent", src: new URL("../test-photos/04_succulent_plant.jpg", import.meta.url).href },
   { name: "Vintage camera", src: new URL("../test-photos/05_vintage_camera.jpg", import.meta.url).href },
   { name: "Croissant", src: new URL("../test-photos/06_fresh_croissant.jpg", import.meta.url).href },
+  { name: "Desk setup", src: new URL("../test-photos/07_desk_workspace_items.jpg", import.meta.url).href },
+  { name: "Breakfast spread", src: new URL("../test-photos/08_breakfast_table_spread.jpg", import.meta.url).href },
+  { name: "Shelf decor", src: new URL("../test-photos/09_shelf_decor_objects.jpg", import.meta.url).href },
+  { name: "Craft table", src: new URL("../test-photos/10_craft_art_desk.jpg", import.meta.url).href },
+  { name: "Picnic gear", src: new URL("../test-photos/11_picnic_summer_gear.jpg", import.meta.url).href },
+  { name: "Everyday carry", src: new URL("../test-photos/12_edc_gear_tray.jpg", import.meta.url).href },
 ];
 
 export default function App() {
@@ -35,7 +41,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#1c2035" : "#fff7ec");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#272322" : "#f5eee4");
     localStorage.setItem("stick-ai-theme", theme);
   }, [theme]);
 
@@ -142,30 +148,30 @@ export default function App() {
 
       <section className="workspace">
         <div className="intro">
-          <p className="eyebrow">OBJECTS, MADE SHAREABLE</p>
-          <h1>{screen === "result" ? <>Look what <span className="headline-pop">you found.</span></> : <>Anything can be a <span className="headline-pop">sticker.</span></>}</h1>
-          <p className="subhead">One photo turns into a clean cutout, ready to share.</p>
+          <p className="eyebrow"><span className="eyebrow-dot" /> YOUR EVERYDAY, STICKERIFIED</p>
+          <h1>{screen === "result" ? <>Look what <span className="headline-pop">you found.</span></> : <>Little things.<br />Big <span className="headline-pop">sticker energy.</span></>}</h1>
+          <p className="subhead">Turn the things you love into little digital keepsakes.</p>
         </div>
 
         {screen === "capture" && <div className="capture-card">
-          <div className="camera-art" aria-hidden="true">
-            <div className="flow-track">
-              <div className="flow-step flow-photo"><span className="flow-number">01</span><div className="flow-picture"><div className="mini-plant"><div className="mini-leaf" /><div className="mini-pot" /></div><Camera className="photo-camera" weight="fill" /></div><span className="flow-caption">Capture</span></div>
-              <ArrowRight className="flow-arrow arrow-one" weight="bold" />
-              <div className="flow-step flow-cutout"><span className="flow-number">02</span><div className="flow-picture checker-mini"><div className="mini-plant cutout-plant"><div className="mini-leaf" /><div className="mini-pot" /></div><Sparkle className="cutout-spark" weight="fill" /></div><span className="flow-caption">Cut out</span></div>
-              <ArrowRight className="flow-arrow arrow-two" weight="bold" />
-              <div className="flow-step flow-share"><span className="flow-number">03</span><div className="flow-picture share-picture"><div className="sticker-mini"><div className="mini-leaf" /><div className="mini-pot" /></div><ShareNetwork className="share-glyph" weight="fill" /></div><span className="flow-caption">Share</span></div>
+          <div className="camera-art studio-board" aria-hidden="true">
+            <div className="board-heading"><span>THE LITTLE THINGS CLUB</span><span>VOL. 01</span></div>
+            <div className="photo-collage">
+              <div className="collage-photo photo-back photo-plant"><img src={samplePhotos[3].src} alt="" /></div>
+              <div className="collage-photo photo-back photo-croissant"><img src={samplePhotos[5].src} alt="" /></div>
+              <div className="collage-photo photo-main"><img src={samplePhotos[0].src} alt="" /><span>my morning ritual</span></div>
+              <div className="collage-seal"><Sparkle weight="fill" /><span>keep<br />the good<br />stuff</span></div>
             </div>
-            <Sparkle className="flow-spark" weight="fill" />
+            <div className="process-rail"><span className="process-step process-photo"><Camera weight="bold" /> Photo</span><ArrowRight className="process-arrow" weight="bold" /><span className="process-step process-cutout"><Scissors weight="bold" /> Cut out</span><ArrowRight className="process-arrow" weight="bold" /><span className="process-step process-share"><ShareNetwork weight="bold" /> Share</span></div>
           </div>
-          <div className="capture-copy"><span className="step-pill"><span>CAPTURE</span></span><h2>Find something with a shape.</h2><p>A coffee cup, a favorite toy, the little thing on your desk.</p>
-            <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><Camera size={19} weight="bold" aria-hidden="true" /> Open camera</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose a photo<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
+          <div className="capture-copy"><span className="step-pill"><span>START WITH A PHOTO</span></span><h2>That thing deserves its own sticker.</h2><p>Your mug, your lucky shoes, that tiny plant you keep alive. Pick a photo and we’ll lift your favorite thing right out.</p>
+            <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><Camera size={19} weight="bold" aria-hidden="true" /> Take a photo</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose from photos<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
             {error && <p className="error-message">{error}</p>}
           </div>
         </div>}
 
         {screen === "capture" && <section className="sample-gallery" aria-label="Sample photos to try">
-          <div className="sample-heading"><h3>Try a sample</h3><span>6 photos, ready to cut out</span></div>
+          <div className="sample-heading"><h3>Or pick a little something</h3><span>{samplePhotos.length} photos, ready when you are</span></div>
           <div className="sample-list">{samplePhotos.map((photo) => <button className="sample-photo" type="button" key={photo.name} onClick={() => void chooseSample(photo.src)} aria-label={`Try sample photo: ${photo.name}`}><img src={photo.src} alt="" loading="lazy" /><span>{photo.name}</span></button>)}</div>
         </section>}
 
