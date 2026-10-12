@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, DownloadSimple, LockKey, Moon, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
 import { captureImage } from "./platform/camera";
 import { saveImage } from "./platform/save";
 import { shareImage } from "./platform/share";
@@ -6,6 +7,16 @@ import { removeBackground } from "./services/cutoutApi";
 
 type Screen = "capture" | "review" | "processing" | "result";
 type OutputMode = "asset" | "sticker";
+type Theme = "light" | "dark";
+
+const samplePhotos = [
+  { name: "Coffee mug", src: new URL("../test-photos/01_coffee_mug.jpg", import.meta.url).href },
+  { name: "Retro sneaker", src: new URL("../test-photos/02_retro_sneaker.jpg", import.meta.url).href },
+  { name: "Plush bear", src: new URL("../test-photos/03_plush_bear.jpg", import.meta.url).href },
+  { name: "Succulent", src: new URL("../test-photos/04_succulent_plant.jpg", import.meta.url).href },
+  { name: "Vintage camera", src: new URL("../test-photos/05_vintage_camera.jpg", import.meta.url).href },
+  { name: "Croissant", src: new URL("../test-photos/06_fresh_croissant.jpg", import.meta.url).href },
+];
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("capture");
@@ -15,10 +26,17 @@ export default function App() {
   const [error, setError] = useState("");
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => localStorage.getItem("stitcher-theme") === "dark" ? "dark" : "light");
   const cameraInput = useRef<HTMLInputElement>(null);
   const [stickerPreviewUrl, setStickerPreviewUrl] = useState("");
   const sourceUrl = useMemo(() => source ? URL.createObjectURL(source) : "", [source]);
   const cutoutUrl = useMemo(() => cutout ? URL.createObjectURL(cutout) : "", [cutout]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#1c2035" : "#fff7ec");
+    localStorage.setItem("stitcher-theme", theme);
+  }, [theme]);
 
   useEffect(() => () => {
     if (sourceUrl) URL.revokeObjectURL(sourceUrl);
@@ -63,6 +81,16 @@ export default function App() {
     setScreen("review");
   }
 
+  async function chooseSample(src: string) {
+    try {
+      const response = await fetch(src);
+      if (!response.ok) throw new Error("Could not load sample photo.");
+      chooseImage(await response.blob());
+    } catch (reason) {
+      setError(message(reason));
+    }
+  }
+
   async function makeCutout() {
     if (!source || busy) return;
     setBusy(true);
@@ -103,40 +131,45 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" data-theme={theme}>
       <header className="topbar">
-        <button className="wordmark" onClick={reset} aria-label="Stitcher home"><span className="brand-mark">s</span> stitcher</button>
-        <span className="cloud-label"><i /> cloud cutout</span>
+        <button className="wordmark" onClick={reset} aria-label="Stitcher home"><span className="brand-mark">s</span><span>stitcher</span></button>
+        <div className="header-actions"><span className="cloud-label"><i /> cloud cutout</span><button className="theme-toggle" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>{theme === "light" ? <Moon weight="bold" aria-hidden="true" /> : <Sun weight="bold" aria-hidden="true" />}<span>{theme === "light" ? "Dark" : "Light"} mode</span></button></div>
       </header>
 
       <section className="workspace">
         <div className="intro">
-          <p className="eyebrow">MAKE THE EVERYDAY YOURS</p>
-          <h1>{screen === "result" ? "Look what you found." : "Anything can be a sticker."}</h1>
-          <p className="subhead">One photo. One clean cutout. Ready to share.</p>
+          <p className="eyebrow">OBJECTS, MADE SHAREABLE</p>
+          <h1>{screen === "result" ? <>Look what <span className="headline-pop">you found.</span></> : <>Anything can be a <span className="headline-pop">sticker.</span></>}</h1>
+          <p className="subhead">One photo turns into a clean cutout, ready to share.</p>
         </div>
 
         {screen === "capture" && <div className="capture-card">
-          <div className="camera-art" aria-hidden="true"><div className="sun" /><div className="spark spark-one">✳</div><div className="spark spark-two">✳</div><div className="frame-corners"><span /><span /><span /><span /></div><div className="object-sample"><div className="leaf" /><div className="pot" /></div><div className="camera-dot" /></div>
-          <div className="capture-copy"><span className="step-pill">01 <span>CAPTURE</span></span><h2>Find something with a shape.</h2><p>A coffee cup, a favorite toy, the little thing on your desk.</p>
-            <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><CameraIcon /> Open camera</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose a photo<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
+          <div className="camera-art" aria-hidden="true"><div className="sun" /><div className="spark spark-one"><Sparkle weight="fill" /></div><div className="spark spark-two"><Sparkle weight="fill" /></div><div className="frame-corners"><span /><span /><span /><span /></div><div className="object-sample"><div className="leaf" /><div className="pot" /></div><div className="sticker-stamp">made with love</div><div className="camera-dot" /></div>
+          <div className="capture-copy"><span className="step-pill"><span>CAPTURE</span></span><h2>Find something with a shape.</h2><p>A coffee cup, a favorite toy, the little thing on your desk.</p>
+            <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><Camera size={19} weight="bold" aria-hidden="true" /> Open camera</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose a photo<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
             {error && <p className="error-message">{error}</p>}
           </div>
         </div>}
 
+        {screen === "capture" && <section className="sample-gallery" aria-label="Sample photos to try">
+          <div className="sample-heading"><h3>Try a sample</h3><span>6 photos, ready to cut out</span></div>
+          <div className="sample-list">{samplePhotos.map((photo) => <button className="sample-photo" type="button" key={photo.name} onClick={() => void chooseSample(photo.src)} aria-label={`Try sample photo: ${photo.name}`}><img src={photo.src} alt="" loading="lazy" /><span>{photo.name}</span></button>)}</div>
+        </section>}
+
         {screen === "review" && sourceUrl && <div className="result-layout">
           <div className="preview-panel"><span className="preview-label">YOUR PHOTO</span><img className="photo-preview" src={sourceUrl} alt="Photo to turn into a sticker" /></div>
-          <div className="result-controls"><span className="step-pill">02 <span>READY?</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><button className="button button-primary full-button" onClick={makeCutout}><SparkleIcon /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message">{error}</p>}</div>
+          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><button className="button button-primary full-button" onClick={makeCutout}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message">{error}</p>}</div>
         </div>}
 
         {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>✳</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your object…</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s · securely processed through our server</small></div>}
 
         {screen === "result" && cutoutUrl && <div className="result-layout">
           <div className="preview-panel preview-checker"><span className="preview-label">YOUR CUTOUT</span><div className="cutout-stage"><img src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" /></div><div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div></div>
-          <div className="result-controls"><span className="step-pill">03 <span>MAKE IT YOURS</span></span><h2>One object, two ways.</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={save}><DownloadIcon /> Save PNG</button><button className="button button-secondary full-button" onClick={share}><ShareIcon /> Share</button><button className="text-button" onClick={reset}>Make another</button>{error && <p className="error-message">{error}</p>}</div>
+          <div className="result-controls"><span className="step-pill"><span>MAKE IT YOURS</span></span><h2>One object, two ways.</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={save}><DownloadSimple size={19} weight="bold" aria-hidden="true" /> Save PNG</button><button className="button button-secondary full-button" onClick={share}><ShareNetwork size={19} weight="bold" aria-hidden="true" /> Share</button><button className="text-button" onClick={reset}>Make another</button>{error && <p className="error-message">{error}</p>}</div>
         </div>}
 
-        <footer className="trust-row"><span><LockIcon /> Your photo is only used to make this cutout</span><span>Made for the things you love.</span></footer>
+        <footer className="trust-row"><span><LockKey size={15} weight="bold" aria-hidden="true" /> Your photo is only used to make this cutout</span><span>Made for the things you love.</span></footer>
       </section>
     </main>
   );
@@ -175,8 +208,3 @@ async function renderOutput(input: Blob, mode: OutputMode): Promise<Blob> {
 }
 
 function message(error: unknown) { return error instanceof Error ? error.message : "Something went wrong. Try again."; }
-function CameraIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l1.5-2h7L17 7h3v12H4z" /><circle cx="12" cy="13" r="3.5" /></svg>; }
-function SparkleIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3Z" /><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" /></svg>; }
-function DownloadIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 19h16" /></svg>; }
-function ShareIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="m8.3 10.8 7.4-4.6m-7.4 7 7.4 4.6" /></svg>; }
-function LockIcon() { return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>; }

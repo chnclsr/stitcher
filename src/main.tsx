@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "@fontsource-variable/nunito-sans";
 import App from "./App";
 import "./style.css";
 
