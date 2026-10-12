@@ -2,6 +2,8 @@
 
 **Make the things around you shareable.**
 
+**Live demo:** [stick.ai on GitHub Pages](https://chnclsr.github.io/stitcher/)
+
 Take a photo, optionally name what should stay, and turn it into a transparent PNG.
 
 **01 Capture** · **02 Choose an object** · **03 Save or share**
