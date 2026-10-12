@@ -16,5 +16,6 @@ local.properties
 
 # Node output
 node_modules/
+dist/
 backend/dist/
 coverage/

@@ -2,65 +2,60 @@
 
 One tap turns a real-world object into a transparent, share-ready digital asset—without editing or switching apps.
 
-## Hackathon MVP
+Stitcher is a web-native cross-platform app packaged for Android with Capacitor. It processes captured still images through fal in the cloud; it does not perform live or on-device segmentation.
 
-Build one reliable flow:
+## Current flow
 
-1. Open a live CameraX preview.
-2. Capture a photo.
-3. Send the photo to the Stitcher proxy for background removal through fal.
-4. Preview the transparent PNG on a checkerboard.
-5. Save or share the result.
+1. Capture a photo with the device camera or choose an image.
+2. Review it, then send it to the Stitcher proxy.
+3. Preview the transparent PNG on a checkerboard.
+4. Choose Asset or Sticker mode.
+5. Download/save the PNG or open the native share sheet.
 
-The MVP processes captured still images in the cloud. It does not perform live or on-device segmentation.
+## Stack
 
-### Required features
+- React, TypeScript, Vite, responsive CSS
+- Capacitor Camera, Filesystem, and Share plugins
+- Node.js/TypeScript proxy with fal `fal-ai/bria/background/remove`
+- `FAL_KEY` stays on the proxy server
 
-- Camera permission and CameraX preview.
-- One-tap capture and visible processing state.
-- fal background removal through a server-side proxy.
-- Transparent PNG preview with Asset and Sticker modes.
-- Save to MediaStore and share through Android Sharesheet.
-- Retry, timeout, and useful error states.
+Platform actions live in `src/platform/`. The UI calls `captureImage()`, `saveImage()`, and `shareImage()` rather than calling Capacitor directly.
 
-Defer live-video segmentation, accounts, cloud libraries, sticker-pack integrations, and advanced effects until the core flow works reliably.
+## Run the web app
 
-## Architecture
+```bash
+npm install
+npm run dev
+```
 
-| Layer | Choice |
-| --- | --- |
-| Android | Kotlin, Jetpack Compose, ViewModel, StateFlow |
-| Camera | CameraX |
-| Networking | Retrofit/OkHttp |
-| Image loading | Coil |
-| Background removal | fal `fal-ai/bria/background/remove` |
-| Proxy | Node.js/TypeScript |
-| Save and share | MediaStore, Android Sharesheet, FileProvider |
+Start the proxy in a second terminal using [backend/README.md](backend/README.md). Vite forwards local `/api` requests to port 8787. Set `VITE_API_BASE_URL` to the deployed proxy URL when frontend and backend use different hosts. Leave it empty for a same-origin deployment.
 
-The app sends a captured JPEG to the proxy. The proxy calls fal with `FAL_KEY` held server-side. The app receives a transparent PNG, previews it, then saves or shares it.
+## Android
 
-## Build order
+Open the project in Android Studio with JDK 17 or 21 and an installed Android SDK, then run:
 
-1. Verify fal returns a transparent cutout for the demo object.
-2. Build the proxy endpoint and secure its API key.
-3. Build the camera capture and upload flow.
-4. Add the transparent preview, Asset/Sticker toggle, save, and share.
-5. Add timeout, retry, and error states.
-6. Rehearse the full flow on the demo phone before adding extras.
+```bash
+npm run android:sync
+npm run android:open
+```
 
-## Judging demo
+Build and test camera, save, and share on a physical phone. This host has Java 25 and no Android SDK. Gradle 8.14.3 rejects the Java 25 class format, so APK packaging remains unverified here.
 
-Show the complete capture-to-share flow on a real Android phone. Explain the cloud processing honestly. Measure processing time and report the observed result rather than promising unverified latency.
+## Checks
 
-Use a 2-minute demo: problem and user (20s), capture and processing (30s), transparent result (30s), save/share (20s), impact and next step (20s). Keep 1 minute for Q&A.
+```bash
+npm run build
+npm run build:proxy
+npm run test:proxy
+```
 
-## Security and privacy
+## Demo
 
-- Never put `FAL_KEY` in the Android app, APK, or Git history.
-- Keep the key in the proxy environment.
-- Tell users that the captured image is sent to fal for cloud processing.
-- Limit upload size and validate image type in the proxy.
+Show the installed Android flow: problem (20s), capture and processing (30s), transparent result (30s), save/share (20s), impact and next step (20s). Keep one minute for Q&A. Report measured processing time. Explain that fal processes the captured image in the cloud.
 
-## Project status
+## Privacy and limits
 
-Initial repository setup. Android and proxy implementation has not started.
+- The photo is sent to the Stitcher proxy and fal for processing.
+- The proxy limits uploads to 10 MB by default, checks file signatures, and rate-limits requests to 12 per minute per client IP.
+- Never put `FAL_KEY` in the web app, Android package, or Git history.
+- Public deployment needs stronger abuse controls and an explicit image-retention policy.

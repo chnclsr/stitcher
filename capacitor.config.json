@@ -1,0 +1,10 @@
+{
+  "appId": "com.stitcher.app",
+  "appName": "Stitcher",
+  "webDir": "dist",
+  "plugins": {
+    "Camera": {
+      "presentationStyle": "fullscreen"
+    }
+  }
+}
