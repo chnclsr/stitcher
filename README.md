@@ -2,7 +2,14 @@
 
 **Make the things around you shareable.**
 
-**Live demo:** [stick.ai on GitHub Pages](https://chnclsr.github.io/stitcher/)
+<p align="center">
+  <a href="https://chnclsr.github.io/stitcher/">
+    <img src="https://img.shields.io/badge/🚀_Live_Demo-Try_stick.ai_on_GitHub_Pages-2D6A4F?style=for-the-badge" alt="Try stick.ai Live Demo">
+  </a>
+</p>
+
+> 🌐 **Public Live Demo:** [**https://chnclsr.github.io/stitcher/**](https://chnclsr.github.io/stitcher/)  
+> *Deployed automatically to GitHub Pages on every push to `developments`.*
 
 Take a photo, optionally name what should stay, and turn it into a transparent PNG.
 
