@@ -1,8 +1,13 @@
-# stick.ai
+# Stitcher
 
-One tap turns a real-world object into a transparent, share-ready digital asset—without editing or switching apps.
+<div align="center">
+  <p><strong>Objects, made shareable.</strong></p>
+  <p>Turn a real-world object into a transparent, share-ready asset in a few taps.</p>
+  <p><sub>REACT · TYPESCRIPT · CAPACITOR · FAL.AI</sub></p>
+</div>
 
-stick.ai is a web-native cross-platform app packaged for Android with Capacitor. It processes captured still images through fal in the cloud; it does not perform live or on-device segmentation.
+> [!NOTE]
+> Stitcher processes captured still images through fal in the cloud. It does not perform live or on-device segmentation.
 
 ## Current flow
 
@@ -12,13 +17,25 @@ stick.ai is a web-native cross-platform app packaged for Android with Capacitor.
 4. Choose Asset or Sticker mode.
 5. Download/save the PNG or open the native share sheet.
 
-## Architecture and data flow
+## 01 · System architecture
 
-These diagrams describe the current implementation. See [the architecture guide](docs/ARCHITECTURE.md) for component details, API behavior, and limits. The editable PR Lens source is in [`docs/diagrams/graph.json`](docs/diagrams/graph.json).
+These diagrams describe the current implementation. See [the architecture guide](docs/ARCHITECTURE.md) for component details, API behavior, and limits. The editable source graph is in [`docs/diagrams/graph.json`](docs/diagrams/graph.json).
 
-![stick.ai architecture: camera and photo picker, React app, secure Express proxy, fal background removal, and save/share adapters](docs/diagrams/architecture.svg)
+![Stitcher architecture: camera and photo picker, React app, secure Express proxy, fal background removal, and save/share adapters](docs/diagrams/architecture.svg)
 
-![stick.ai data flow from captured image through fal background removal to a saved or shared PNG](docs/diagrams/capture-flow.svg)
+![Stitcher data flow from captured image through fal background removal to a saved or shared PNG](docs/diagrams/capture-flow.svg)
+
+## 02 · Object guidance
+
+Complex photos can contain several objects. Add a short description such as “the red mug near the back”; Stitcher sends that optional hint through the proxy with the photo. The fal key stays server-side.
+
+![Sequence diagram showing optional target text moving from Stitcher through the secure proxy to fal, then returning a transparent PNG](docs/diagrams/object-guidance.svg)
+
+## 03 · App lifecycle
+
+The review step lets users add a target description before processing. If background removal fails, they return to review and can retry with the same photo.
+
+![Stitcher app states: capture, review with optional target text, processing, result, and recovery on failure](docs/diagrams/capture-lifecycle.svg)
 
 ## Stack
 
@@ -36,7 +53,7 @@ npm install
 npm run dev
 ```
 
-Start the proxy in a second terminal using [backend/README.md](backend/README.md). Vite forwards local `/api` requests to port 8788. Set `VITE_API_BASE_URL` to the deployed proxy URL when frontend and backend use different hosts. Leave it empty for a same-origin deployment.
+The cutout flow needs the proxy running too. In a second terminal, run `cd backend` then `npm run dev` (configure `backend/.env` first; see [backend/README.md](backend/README.md)). Vite forwards local `/api` requests to port 8788. Set `VITE_API_BASE_URL` to the deployed proxy URL when frontend and backend use different hosts. Leave it empty for a same-origin deployment.
 
 ## Android
 
