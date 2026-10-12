@@ -51,6 +51,18 @@ stick.ai turns a photo into a transparent cutout. Users can optionally describe 
 - Research tool: built-in web search used for product and provider research, including design options and fal API/model information. Research plugins such as `Consensus`, `Scite`, `Exa`, `Tavily`, `Firecrawl`, and `Parallel Search` appeared as available, not installed.
 - Catalog status checked 12 October 2026. Plugin search results are not proof of installation or prior use. Capacitor plugins above are app dependencies, not Codex plugins.
 
+### Repository citations
+
+| Tool or project | Source repository |
+| --- | --- |
+| stick.ai app | [chnclsr/stitcher](https://github.com/chnclsr/stitcher) |
+| Frontend taste skill | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) |
+| PR Lens CLI, GitHub Action, and agent skill | [coldteadotai/pr-lens](https://github.com/coldteadotai/pr-lens) |
+| Open CoDesign | [OpenCoworkAI/open-codesign](https://github.com/OpenCoworkAI/open-codesign) |
+| tldraw diagram canvas | [tldraw/tldraw](https://github.com/tldraw/tldraw) |
+
+Figma, Whimsical, Miro, MagicPath, and research integrations were discovered through the Codex plugin catalog. This report does not identify a public source repository for those integrations. “I Have ADHD” and the exact “Diagram Designer” product also lack a verified repository citation.
+
 ## GitHub repositories
 
 | Repository | Purpose | Project status |

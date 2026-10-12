@@ -45,6 +45,12 @@ npm run dev
 
 Vite forwards `/api` requests to port 8788. Set `VITE_API_BASE_URL` when app and proxy use different hosts. Leave it empty for same-origin use.
 
+## Public demo with GitHub Pages
+
+The `Deploy web app to GitHub Pages` workflow builds and publishes the frontend whenever `developments` changes. After the first successful run, the site URL is `https://chnclsr.github.io/stitcher/`.
+
+In repository **Settings → Pages**, set the publishing source to **GitHub Actions** if it is not already selected. For cutout processing outside the local network, deploy the proxy to a public Node.js host, set `FAL_KEY` on that host, then add repository variable `VITE_API_BASE_URL` with the proxy's HTTPS origin (no trailing slash). GitHub Pages hosts static files only; it cannot run the fal proxy. Keep `FAL_KEY` out of repository variables and the frontend.
+
 ## Android
 
 Open the project in Android Studio with JDK 17 or 21 and an Android SDK. Then sync and launch:
