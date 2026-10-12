@@ -9,7 +9,7 @@ Node.js proxy for fal background removal. It keeps `FAL_KEY` out of the Android 
 3. Copy `.env.example` to `.env` and set `FAL_KEY`.
 4. Run `npm run dev`.
 
-The proxy listens on port 8787 by default. Do not commit `.env`.
+The proxy listens on port 8788 by default. It loads `.env` automatically. Do not commit `.env`.
 
 ## API
 
