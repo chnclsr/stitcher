@@ -6,7 +6,23 @@ Take a photo, optionally name what should stay, and turn it into a transparent P
 
 **01 Capture** · **02 Choose an object** · **03 Save or share**
 
-<img src="docs/screenshots/stick-ai-home.png" alt="stick.ai capture screen with the capture, cutout, and share flow" width="760">
+<p align="center">
+  <img src="docs/usage-demo.gif" alt="stick.ai demo walkthrough showing image selection, object prompt, cutout, and sticker outline" width="820">
+</p>
+
+<p align="center">
+  <sub>Full walkthrough recording available as <a href="docs/usage-demo.mp4">docs/usage-demo.mp4</a></sub>
+</p>
+
+## Screenshots
+
+| 01. Home & Photo Capture | 02. Review & Object Guidance |
+| :---: | :---: |
+| <img src="docs/screenshots/stick-ai-home.png" alt="stick.ai home capture screen" width="400"> | <img src="docs/screenshots/stick-ai-review.png" alt="stick.ai review and prompt input screen" width="400"> |
+
+| 03. Transparent Asset Cutout | 04. Sticker Outline Mode |
+| :---: | :---: |
+| <img src="docs/screenshots/stick-ai-result-asset.png" alt="stick.ai transparent PNG result screen" width="400"> | <img src="docs/screenshots/stick-ai-result-sticker.png" alt="stick.ai sticker white outline mode" width="400"> |
 
 > **Processing today:** photos are sent to fal through the proxy. Processing happens in the cloud; live and on-device segmentation are not implemented.
 
@@ -40,20 +56,23 @@ npm run android:open
 
 Test camera, save, and share on a physical phone.
 
-<details>
-<summary>Architecture and app flows</summary>
+## Architecture
 
 ![stick.ai architecture: camera and photo picker, React app, proxy, fal background removal, and save/share adapters](docs/diagrams/architecture.svg)
 
-Optional hints help select objects in complex photos. Failed requests return to review for retry.
+### Object guidance
+
+Optional hints help select objects in complex photos.
 
 ![Object hint flow through the proxy to fal](docs/diagrams/object-guidance.svg)
+
+### App lifecycle
+
+Failed requests return to review for retry.
 
 ![Capture, review, processing, result, and retry states](docs/diagrams/capture-lifecycle.svg)
 
 See the [architecture guide](docs/ARCHITECTURE.md) for API behavior and limits. Editable sources: [object guidance](docs/diagrams/object-guidance.html) · [app lifecycle](docs/diagrams/capture-lifecycle.html).
-</details>
-
 ## Checks
 
 ```bash

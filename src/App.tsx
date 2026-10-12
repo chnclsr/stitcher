@@ -1,13 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Camera, DownloadSimple, LockKey, Moon, Scissors, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
+import { Capacitor } from "@capacitor/core";
+import { ArrowRight, Camera, DownloadSimple, Keyboard, LockKey, Moon, Scissors, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
 import { captureImage } from "./platform/camera";
 import { saveImage } from "./platform/save";
 import { shareImage } from "./platform/share";
+import { addStickerToKeyboard } from "./platform/stickerKeyboard";
+import { PolygonPhotoEditor, type SelectionTool } from "./components/PolygonPhotoEditor";
 import { removeBackground } from "./services/cutoutApi";
+import { clipPngToPolygon, cropToPolygon, type NormalizedPoint } from "./services/polygonSelection";
 
 type Screen = "capture" | "review" | "processing" | "result";
 type OutputMode = "asset" | "sticker";
 type Theme = "light" | "dark";
+type GuidanceMode = "describe" | "outline";
 
 const samplePhotos = [
   { name: "Coffee mug", src: new URL("../test-photos/01_coffee_mug.jpg", import.meta.url).href },
@@ -33,10 +38,15 @@ export default function App() {
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
   const [targetObject, setTargetObject] = useState("");
+  const [guidanceMode, setGuidanceMode] = useState<GuidanceMode>("describe");
+  const [selectionTool, setSelectionTool] = useState<SelectionTool>("pen");
+  const [polygonPoints, setPolygonPoints] = useState<NormalizedPoint[]>([]);
+  const [polygonComplete, setPolygonComplete] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("stick-ai-theme") ?? localStorage.getItem("stitcher-theme")) === "dark" ? "dark" : "light");
   const cameraInput = useRef<HTMLInputElement>(null);
   const [stickerPreviewUrl, setStickerPreviewUrl] = useState("");
   const [stickerGenerating, setStickerGenerating] = useState(false);
+  const [resultNotice, setResultNotice] = useState("");
   const sourceUrl = useMemo(() => source ? URL.createObjectURL(source) : "", [source]);
   const cutoutUrl = useMemo(() => cutout ? URL.createObjectURL(cutout) : "", [cutout]);
 
@@ -93,6 +103,10 @@ export default function App() {
     setSource(image);
     setCutout(null);
     setTargetObject("");
+    setGuidanceMode("describe");
+    setSelectionTool("pen");
+    setPolygonPoints([]);
+    setPolygonComplete(false);
     setError("");
     setScreen("review");
   }
@@ -109,6 +123,11 @@ export default function App() {
 
   async function makeCutout() {
     if (!source || busy) return;
+    const usingOutline = guidanceMode === "outline";
+    if (usingOutline && (!polygonComplete || polygonPoints.length < 3)) {
+      setError("Draw one continuous line around the object, or drag a box around it.");
+      return;
+    }
     setBusy(true);
     setError("");
     setElapsed(0);
@@ -116,7 +135,17 @@ export default function App() {
     const started = performance.now();
     const timer = window.setInterval(() => setElapsed(Math.floor((performance.now() - started) / 1000)), 250);
     try {
-      setCutout(await removeBackground(source, targetObject));
+      let photo = source;
+      let prompt = targetObject;
+      let outputPolygon: NormalizedPoint[] | undefined;
+      if (usingOutline) {
+        const selection = await cropToPolygon(source, polygonPoints);
+        photo = selection.photo;
+        outputPolygon = selection.polygon;
+        prompt = "the object inside the marked outline";
+      }
+      const result = await removeBackground(photo, prompt);
+      setCutout(outputPolygon ? await clipPngToPolygon(result, outputPolygon) : result);
       setScreen("result");
     } catch (reason) {
       setError(message(reason));
@@ -129,20 +158,46 @@ export default function App() {
 
   async function save() {
     if (!cutout) return;
-    try { await saveImage(await renderOutput(cutout, mode)); }
+    setError("");
+    setResultNotice("");
+    try {
+      await saveImage(await renderOutput(cutout, mode));
+      setResultNotice("PNG saved.");
+    }
     catch (reason) { setError(message(reason)); }
   }
 
   async function share() {
     if (!cutout) return;
-    try { await shareImage(await renderOutput(cutout, mode)); }
+    setError("");
+    setResultNotice("");
+    try {
+      const result = await shareImage(await renderOutput(cutout, mode));
+      if (result === "downloaded") setResultNotice("Sharing isn’t supported in this browser, so the PNG was downloaded.");
+    }
     catch (reason) { setError(message(reason)); }
+  }
+
+  async function addToKeyboard() {
+    if (!cutout) return;
+    setError("");
+    setResultNotice("");
+    try {
+      const result = await addStickerToKeyboard(await renderOutput(cutout, "sticker"));
+      setResultNotice(result.message);
+    } catch (reason) {
+      setError(message(reason));
+    }
   }
 
   function reset() {
     setSource(null);
     setCutout(null);
     setTargetObject("");
+    setGuidanceMode("describe");
+    setSelectionTool("pen");
+    setPolygonPoints([]);
+    setPolygonComplete(false);
     setError("");
     setScreen("capture");
   }
@@ -151,7 +206,7 @@ export default function App() {
     <main className="app-shell" data-theme={theme}>
       <header className="topbar">
         <button className="wordmark" onClick={reset} aria-label="stick.ai home"><span className="brand-mark">s</span><span>stick.ai</span></button>
-        <div className="header-actions"><span className="cloud-label"><i /> cloud cutout</span><button className="theme-toggle" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>{theme === "light" ? <Moon weight="bold" aria-hidden="true" /> : <Sun weight="bold" aria-hidden="true" />}<span>{theme === "light" ? "Dark" : "Light"} mode</span></button></div>
+        <button className="theme-toggle" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>{theme === "light" ? <Moon weight="bold" aria-hidden="true" /> : <Sun weight="bold" aria-hidden="true" />}<span>{theme === "light" ? "Dark" : "Light"} mode</span></button>
       </header>
 
       <section className="workspace">
@@ -172,7 +227,7 @@ export default function App() {
             </div>
             <div className="process-rail"><span className="process-step process-photo"><Camera weight="bold" /> Photo</span><ArrowRight className="process-arrow" weight="bold" /><span className="process-step process-cutout"><Scissors weight="bold" /> Cut out</span><ArrowRight className="process-arrow" weight="bold" /><span className="process-step process-share"><ShareNetwork weight="bold" /> Share</span></div>
           </div>
-          <div className="capture-copy"><span className="step-pill"><span>START WITH A PHOTO</span></span><h2>That thing deserves its own sticker.</h2><p>Your mug, your lucky shoes, that tiny plant you keep alive. Pick a photo and weâ€™ll lift your favorite thing right out.</p>
+          <div className="capture-copy"><span className="step-pill"><span>START WITH A PHOTO</span></span><h2>That thing deserves its own sticker.</h2><p>Your mug, your lucky shoes, that tiny plant you keep alive. Pick a photo and we’ll lift your favorite thing right out.</p>
             <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><Camera size={19} weight="bold" aria-hidden="true" /> Take a photo</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose from photos<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
             {error && <p className="error-message">{error}</p>}
           </div>
@@ -184,15 +239,41 @@ export default function App() {
         </section>}
 
         {screen === "review" && sourceUrl && <div className="result-layout">
-          <div className="preview-panel"><span className="preview-label">YOUR PHOTO</span><img className="photo-preview" src={sourceUrl} alt="Photo to turn into a sticker" /></div>
-          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Letâ€™s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><label className="target-field-label" htmlFor="target-object">Describe the object to keep <span>Optional</span></label><input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder="e.g. the red apple near the juice" aria-describedby="target-object-hint target-object-cost" /><p id="target-object-hint" className="field-hint">Point out the exact item in a busy photo. Leave blank to remove the background from the main subject.</p><p id="target-object-cost" className="field-cost">With a prompt: $0.03/image Â· Standard cutout: $0.018/image.</p><button className="button button-primary full-button" onClick={makeCutout}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message" role="alert">{error}</p>}</div>
+          <div className={`preview-panel${guidanceMode === "outline" ? " preview-drawing" : ""}`}>
+            <span className="preview-label">YOUR PHOTO</span>
+            <PolygonPhotoEditor src={sourceUrl} points={polygonPoints} active={guidanceMode === "outline" && !polygonComplete} complete={polygonComplete} tool={selectionTool} onPointsChange={(points) => { setPolygonPoints(points); setPolygonComplete(false); setError(""); }} onFinish={(points) => { setPolygonPoints(points); setPolygonComplete(true); setError(""); }} />
+            {guidanceMode === "outline" && <span className="drawing-tip">{selectionTool === "pen" ? "Draw around it in one stroke · leave a little room" : "Drag a box around it"}</span>}
+          </div>
+          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p>
+            <div className="guidance-switch" role="group" aria-label="Choose how to identify the object">
+              <button type="button" className={guidanceMode === "describe" ? "selected" : ""} onClick={() => { setGuidanceMode("describe"); setError(""); }}>Describe it</button>
+              <button type="button" className={guidanceMode === "outline" ? "selected" : ""} onClick={() => { setGuidanceMode("outline"); setError(""); }}>Draw around it</button>
+            </div>
+            {guidanceMode === "describe" ? <>
+              <label className="target-field-label" htmlFor="target-object">Describe the object to keep <span>Optional</span></label>
+              <input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder="e.g. the red apple near the juice" aria-describedby="target-object-hint" />
+              <p id="target-object-hint" className="field-hint">Point out the exact item in a busy photo. Leave blank to use the main subject.</p>
+            </> : <>
+              <p className="field-hint polygon-help">Choose a pen stroke for a closer outline, or box for a quick selection.</p>
+              <div className="selection-tools" role="group" aria-label="Selection drawing tool">
+                <button type="button" className={selectionTool === "pen" ? "selected" : ""} onClick={() => { setSelectionTool("pen"); setPolygonPoints([]); setPolygonComplete(false); }}>Freehand pen</button>
+                <button type="button" className={selectionTool === "box" ? "selected" : ""} onClick={() => { setSelectionTool("box"); setPolygonPoints([]); setPolygonComplete(false); }}>Bounding box</button>
+              </div>
+              <div className="polygon-actions">
+                <button type="button" onClick={() => { setPolygonPoints([]); setPolygonComplete(false); setError(""); }} disabled={polygonPoints.length === 0}>{polygonComplete ? "Redraw" : "Clear"}</button>
+                <span className="selection-status" role="status">{polygonComplete ? "Selection ready" : polygonPoints.length > 0 ? "Keep drawing to enclose it" : "Drag over the photo"}</span>
+              </div>
+              <p className="field-cost">Outlined selection uses guided processing: $0.03/image.</p>
+            </>}
+            {guidanceMode === "describe" && <p className="field-cost">With a prompt: $0.03/image · Standard cutout: $0.018/image.</p>}
+            <button className="button button-primary full-button" onClick={makeCutout} disabled={guidanceMode === "outline" && (!polygonComplete || polygonPoints.length < 3)}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message" role="alert">{error}</p>}</div>
         </div>}
 
-        {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>âœ³</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your objectâ€¦</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s Â· securely processed through our server</small></div>}
+        {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>✳</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your object…</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s · securely processed through our server</small></div>}
 
         {screen === "result" && cutoutUrl && <div className="result-layout">
-          <div className="preview-panel preview-checker"><span className="preview-label">YOUR CUTOUT</span><div className="cutout-stage" aria-busy={stickerGenerating}><img className={mode === "sticker" && stickerPreviewUrl ? "sticker-rendered" : undefined} src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" />{stickerGenerating && mode === "sticker" && <span className="sticker-pending" role="status">Adding sticker edgeâ€¦</span>}</div><div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div></div>
-          <div className="result-controls"><span className="step-pill"><span>MAKE IT YOURS</span></span><h2>One object, two ways.</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={save}><DownloadSimple size={19} weight="bold" aria-hidden="true" /> Save PNG</button><button className="button button-secondary full-button" onClick={share}><ShareNetwork size={19} weight="bold" aria-hidden="true" /> Share</button><button className="text-button" onClick={reset}>Make another</button>{error && <p className="error-message">{error}</p>}</div>
+          <div className="preview-panel preview-checker"><span className="preview-label">YOUR CUTOUT</span><div className="cutout-stage" aria-busy={stickerGenerating}><img className={mode === "sticker" && stickerPreviewUrl ? "sticker-rendered" : undefined} src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" />{stickerGenerating && mode === "sticker" && <span className="sticker-pending" role="status">Adding sticker edge…</span>}</div><div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div></div>
+          <div className="result-controls"><span className="step-pill"><span>MAKE IT YOURS</span></span><h2>One object, two ways.</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={addToKeyboard}><Keyboard size={19} weight="bold" aria-hidden="true" /> {Capacitor.isNativePlatform() ? "Add to my keyboard" : "Download sticker PNG"}</button><button className="button button-secondary full-button" onClick={share}><ShareNetwork size={19} weight="bold" aria-hidden="true" /> Share sticker</button><button className="text-button" onClick={save}><DownloadSimple size={17} weight="bold" aria-hidden="true" /> Save PNG instead</button><button className="text-button" onClick={reset}>Make another</button>{resultNotice && <p className="success-message" role="status">{resultNotice}</p>}{error && <p className="error-message" role="alert">{error}</p>}</div>
         </div>}
 
         <footer className="trust-row"><span><LockKey size={15} weight="bold" aria-hidden="true" /> Your photo is only used to make this cutout</span><span>Made for the things you love.</span></footer>
@@ -236,7 +317,35 @@ async function renderOutput(input: Blob, mode: OutputMode): Promise<Blob> {
     if (!context) throw new Error("Could not prepare sticker image.");
     context.drawImage(outline, 0, 0);
     context.drawImage(image, radius, radius, outputWidth, outputHeight);
-    return await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Could not export sticker PNG.")), "image/png"));
+
+    const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+    let minX = canvas.width;
+    let minY = canvas.height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < canvas.height; y += 1) {
+      for (let x = 0; x < canvas.width; x += 1) {
+        if (data[(y * canvas.width + x) * 4 + 3] <= 4) continue;
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (maxX < minX || maxY < minY) throw new Error("Could not find the sticker in this image.");
+
+    const padding = Math.max(10, Math.round(radius * 0.5));
+    const left = Math.max(0, minX - padding);
+    const top = Math.max(0, minY - padding);
+    const right = Math.min(canvas.width, maxX + padding + 1);
+    const bottom = Math.min(canvas.height, maxY + padding + 1);
+    const cropped = document.createElement("canvas");
+    cropped.width = right - left;
+    cropped.height = bottom - top;
+    const croppedContext = cropped.getContext("2d");
+    if (!croppedContext) throw new Error("Could not crop sticker image.");
+    croppedContext.drawImage(canvas, left, top, cropped.width, cropped.height, 0, 0, cropped.width, cropped.height);
+    return await new Promise((resolve, reject) => cropped.toBlob(blob => blob ? resolve(blob) : reject(new Error("Could not export sticker PNG.")), "image/png"));
   } finally {
     URL.revokeObjectURL(imageUrl);
   }

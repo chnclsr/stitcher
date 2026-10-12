@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">stick.ai</string>
     <string name="title_activity_main">stick.ai</string>
+    <string name="keyboard_label">stick.ai stickers</string>
     <string name="package_name">com.stitcher.app</string>
     <string name="custom_url_scheme">com.stitcher.app</string>
 </resources>

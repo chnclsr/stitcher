@@ -1,12 +1,12 @@
-# stick.ai architecture
+# Stitcher architecture
 
-This guide reflects the current `developments` branch. stick.ai is a React/Vite web app packaged for Android with Capacitor. It processes captured or selected still images through the stick.ai proxy and fal. Segmentation is neither live nor on-device.
+This guide reflects the current `developments` branch. Stitcher is a React/Vite web app packaged for Android with Capacitor. It processes captured or selected still images through the Stitcher proxy and fal. Segmentation is neither live nor on-device.
 
 The [PR Lens source graph](diagrams/graph.json) generates the two diagrams below.
 
 ## Components
 
-![stick.ai architecture: client, proxy, and fal service](diagrams/architecture.svg)
+![Stitcher architecture: client, proxy, and fal service](diagrams/architecture.svg)
 
 - **React client (`src/App.tsx`)** manages photo selection, review, optional object guidance, processing state, Asset/Sticker mode, and result actions.
 - **Capture adapter (`src/platform/camera.ts`)** invokes Capacitor Camera on native Android. In the browser, the UI uses HTML file inputs for camera capture or choosing an image.

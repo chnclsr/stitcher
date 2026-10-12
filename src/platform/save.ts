@@ -18,8 +18,11 @@ export async function saveImage(image: Blob): Promise<void> {
   const link = document.createElement("a");
   link.href = url;
   link.download = filename;
+  link.style.display = "none";
+  document.body.appendChild(link);
   link.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 function blobToBase64(blob: Blob): Promise<string> {

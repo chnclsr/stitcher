@@ -1,8 +1,9 @@
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
+import { saveImage } from "./save";
 
-export async function shareImage(image: Blob): Promise<void> {
+export async function shareImage(image: Blob): Promise<"shared" | "downloaded"> {
   const filename = `stick-ai-${Date.now()}.png`;
   if (Capacitor.isNativePlatform()) {
     const base64 = await new Promise<string>((resolve, reject) => {
@@ -13,11 +14,20 @@ export async function shareImage(image: Blob): Promise<void> {
     });
     const { uri } = await Filesystem.writeFile({ path: filename, data: base64, directory: Directory.Cache });
     await Share.share({ title: "My stick.ai cutout", files: [uri], dialogTitle: "Share your cutout" });
-    return;
+    return "shared";
   }
-  if (navigator.canShare?.({ files: [new File([image], filename, { type: "image/png" })] })) {
-    await navigator.share({ files: [new File([image], filename, { type: "image/png" })], title: "My stick.ai cutout" });
-    return;
+
+  const file = new File([image], filename, { type: "image/png" });
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "My stick.ai cutout" });
+      return "shared";
+    } catch (error) {
+      // A dismissed share sheet is a deliberate cancel; don't unexpectedly download.
+      if (error instanceof DOMException && error.name === "AbortError") throw error;
+    }
   }
-  throw new Error("File sharing is not available here. Download the PNG instead.");
+
+  await saveImage(image);
+  return "downloaded";
 }

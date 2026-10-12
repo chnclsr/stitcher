@@ -1,8 +1,8 @@
 {
   "schemaVersion": "0.2.0",
   "kind": "graph",
-  "title": "stick.ai capture to share",
-  "summary": "stick.ai captures or selects a still image, sends it through a server-side fal proxy for background removal, then builds and saves or shares a transparent PNG.",
+  "title": "Stitcher capture to share",
+  "summary": "Stitcher captures or selects a still image, sends it through a server-side fal proxy for background removal, then builds and saves or shares a transparent PNG.",
   "lenses": [
     "architecture",
     "data-flow"
@@ -25,13 +25,13 @@
   "lanes": [
     {
       "id": "client",
-      "label": "stick.ai client",
+      "label": "Stitcher client",
       "subtitle": "React · Vite · Capacitor",
       "order": 0
     },
     {
       "id": "proxy",
-      "label": "stick.ai proxy",
+      "label": "Stitcher proxy",
       "subtitle": "Node.js · Express",
       "order": 1
     },
@@ -258,7 +258,7 @@
       "delta": "unchanged",
       "participants": [
         {
-          "label": "stick.ai client",
+          "label": "Stitcher client",
           "node": "stitcher-ui"
         },
         {
@@ -325,7 +325,7 @@
   "views": [
     {
       "id": "architecture",
-      "title": "stick.ai components",
+      "title": "Stitcher components",
       "lens": "architecture",
       "summary": "The client, secure proxy, and fal service boundary.",
       "scope": {

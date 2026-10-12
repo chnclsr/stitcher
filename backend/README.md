@@ -1,4 +1,4 @@
-# stick.ai proxy
+# Stitcher proxy
 
 Node.js proxy for fal background removal. It keeps `FAL_KEY` out of the Android app.
 
