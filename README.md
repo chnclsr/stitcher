@@ -33,6 +33,17 @@ Take a photo, optionally name what should stay, and turn it into a transparent P
 | :---: | :---: |
 | <img src="docs/screenshots/stick-ai-result-asset.png" alt="stick.ai transparent PNG result screen" width="400"> | <img src="docs/screenshots/stick-ai-result-sticker.png" alt="stick.ai sticker white outline mode" width="400"> |
 
+### Visual Masking & Selection (Draw Around It)
+
+For precise guidance in complex or cluttered photos, users can draw a visual mask directly on the canvas instead of relying solely on text descriptions:
+- **Freehand pen**: Draw a smooth outline around target objects in a single stroke with room to spare.
+- **Bounding box**: Drag a rectangular selection over the desired items.
+- Works in both **Single object** and **Multi-object** modes, sending the drawn mask to fal's guided segmentation model.
+
+<p align="center">
+  <img src="docs/screenshots/mask-selection-review.png" alt="stick.ai visual mask selection with freehand pen around multiple objects on a picnic blanket" width="820">
+</p>
+
 ### Single & Multi-Object Extraction
 
 Users can select the extraction mode during the review stage:
