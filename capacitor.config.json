@@ -1,6 +1,6 @@
 {
   "appId": "com.stitcher.app",
-  "appName": "Stitcher",
+  "appName": "stick.ai",
   "webDir": "dist",
   "plugins": {
     "Camera": {

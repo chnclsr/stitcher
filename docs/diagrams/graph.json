@@ -1,0 +1,352 @@
+{
+  "schemaVersion": "0.2.0",
+  "kind": "graph",
+  "title": "stick.ai capture to share",
+  "summary": "stick.ai captures or selects a still image, sends it through a server-side fal proxy for background removal, then builds and saves or shares a transparent PNG.",
+  "lenses": [
+    "architecture",
+    "data-flow"
+  ],
+  "provenance": {
+    "repo": {
+      "owner": "chnclsr",
+      "name": "stitcher",
+      "host": "github.com"
+    },
+    "base": {
+      "sha": "9d1826cb7da0ee0f5755b1fb3884d18f5666c995",
+      "ref": "developments"
+    },
+    "head": {
+      "sha": "9d1826cb7da0ee0f5755b1fb3884d18f5666c995",
+      "ref": "developments"
+    }
+  },
+  "lanes": [
+    {
+      "id": "client",
+      "label": "stick.ai client",
+      "subtitle": "React · Vite · Capacitor",
+      "order": 0
+    },
+    {
+      "id": "proxy",
+      "label": "stick.ai proxy",
+      "subtitle": "Node.js · Express",
+      "order": 1
+    },
+    {
+      "id": "provider",
+      "label": "fal cloud",
+      "subtitle": "Storage + background removal",
+      "order": 2
+    }
+  ],
+  "nodes": [
+    {
+      "id": "capture-input",
+      "label": "Camera or photo picker",
+      "kind": "module",
+      "delta": "unchanged",
+      "lane": "client",
+      "summary": "Native Android capture uses Capacitor Camera; browsers use the camera input or choose-photo input.",
+      "files": [
+        {
+          "path": "src/platform/camera.ts"
+        },
+        {
+          "path": "src/App.tsx"
+        }
+      ]
+    },
+    {
+      "id": "stitcher-ui",
+      "label": "React application",
+      "kind": "ui",
+      "delta": "unchanged",
+      "lane": "client",
+      "subtitle": "capture · review · result",
+      "summary": "Coordinates selected images, optional object guidance, processing state, output mode, and result actions.",
+      "files": [
+        {
+          "path": "src/App.tsx"
+        }
+      ]
+    },
+    {
+      "id": "cutout-api-client",
+      "label": "Cutout API client",
+      "kind": "module",
+      "delta": "unchanged",
+      "lane": "client",
+      "subtitle": "multipart photo + optional targetObject",
+      "summary": "Posts the image to /api/remove-background and requires the response to be a PNG.",
+      "files": [
+        {
+          "path": "src/services/cutoutApi.ts"
+        }
+      ]
+    },
+    {
+      "id": "output-builder",
+      "label": "Asset / sticker builder",
+      "kind": "function",
+      "delta": "unchanged",
+      "lane": "client",
+      "subtitle": "Sticker outline drawn in canvas",
+      "summary": "Keeps the transparent cutout for Asset mode or draws a white outline around it for Sticker mode.",
+      "files": [
+        {
+          "path": "src/App.tsx",
+          "startLine": 190,
+          "endLine": 220
+        }
+      ]
+    },
+    {
+      "id": "save-share-adapter",
+      "label": "Save and share adapters",
+      "kind": "module",
+      "delta": "unchanged",
+      "lane": "client",
+      "subtitle": "web fallback + native plugins",
+      "summary": "Downloads or shares through browser APIs on web; uses Capacitor Filesystem and Share on Android.",
+      "files": [
+        {
+          "path": "src/platform/save.ts"
+        },
+        {
+          "path": "src/platform/share.ts"
+        }
+      ]
+    },
+    {
+      "id": "capacitor-runtime",
+      "label": "Capacitor Android runtime",
+      "kind": "app",
+      "delta": "unchanged",
+      "lane": "client",
+      "subtitle": "Camera · Filesystem · Share",
+      "summary": "Provides native camera capture, documents/cache file access, and the Android share sheet.",
+      "files": [
+        {
+          "path": "capacitor.config.json"
+        },
+        {
+          "path": "android/app/src/main/AndroidManifest.xml"
+        }
+      ]
+    },
+    {
+      "id": "proxy-endpoint",
+      "label": "Background removal API",
+      "kind": "route",
+      "delta": "unchanged",
+      "lane": "proxy",
+      "subtitle": "POST /api/remove-background",
+      "summary": "Keeps FAL_KEY server-side; validates image type/signature, upload size and optional object text, rate-limits requests, then returns PNG bytes.",
+      "files": [
+        {
+          "path": "backend/src/app.ts"
+        }
+      ]
+    },
+    {
+      "id": "fal-model",
+      "label": "fal background remover",
+      "kind": "external",
+      "delta": "unchanged",
+      "lane": "provider",
+      "subtitle": "fal-ai/bria/background/remove",
+      "summary": "Receives the uploaded still image and optional target prompt, then returns a transparent PNG result.",
+      "files": [
+        {
+          "path": "backend/src/app.ts",
+          "startLine": 6,
+          "endLine": 58
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "capture-to-ui",
+      "from": "capture-input",
+      "to": "stitcher-ui",
+      "kind": "data",
+      "delta": "unchanged",
+      "label": "photo blob"
+    },
+    {
+      "id": "ui-to-client",
+      "from": "stitcher-ui",
+      "to": "cutout-api-client",
+      "kind": "call",
+      "delta": "unchanged",
+      "label": "process photo"
+    },
+    {
+      "id": "client-to-proxy",
+      "from": "cutout-api-client",
+      "to": "proxy-endpoint",
+      "kind": "http",
+      "delta": "unchanged",
+      "label": "multipart upload",
+      "emphasis": "hero"
+    },
+    {
+      "id": "proxy-to-fal",
+      "from": "proxy-endpoint",
+      "to": "fal-model",
+      "kind": "http",
+      "delta": "unchanged",
+      "label": "upload + inference"
+    },
+    {
+      "id": "fal-to-proxy",
+      "from": "fal-model",
+      "to": "proxy-endpoint",
+      "kind": "data",
+      "delta": "unchanged",
+      "label": "transparent PNG"
+    },
+    {
+      "id": "proxy-to-client",
+      "from": "proxy-endpoint",
+      "to": "cutout-api-client",
+      "kind": "http",
+      "delta": "unchanged",
+      "label": "image/png · no-store"
+    },
+    {
+      "id": "client-to-ui",
+      "from": "cutout-api-client",
+      "to": "stitcher-ui",
+      "kind": "data",
+      "delta": "unchanged",
+      "label": "cutout blob"
+    },
+    {
+      "id": "ui-to-builder",
+      "from": "stitcher-ui",
+      "to": "output-builder",
+      "kind": "call",
+      "delta": "unchanged",
+      "label": "Asset or Sticker"
+    },
+    {
+      "id": "builder-to-adapter",
+      "from": "output-builder",
+      "to": "save-share-adapter",
+      "kind": "data",
+      "delta": "unchanged",
+      "label": "share-ready PNG"
+    },
+    {
+      "id": "adapter-to-capacitor",
+      "from": "save-share-adapter",
+      "to": "capacitor-runtime",
+      "kind": "call",
+      "delta": "unchanged",
+      "label": "native file / share"
+    }
+  ],
+  "flows": [
+    {
+      "id": "photo-to-png-flow",
+      "title": "From camera photo to share-ready PNG",
+      "delta": "unchanged",
+      "participants": [
+        {
+          "label": "stick.ai client",
+          "node": "stitcher-ui"
+        },
+        {
+          "label": "Proxy",
+          "node": "proxy-endpoint"
+        },
+        {
+          "label": "fal",
+          "node": "fal-model"
+        }
+      ],
+      "messages": [
+        {
+          "kind": "sync",
+          "from": "stitcher-ui",
+          "id": "upload",
+          "delta": "unchanged",
+          "to": "proxy-endpoint",
+          "label": "photo + optional object guidance"
+        },
+        {
+          "kind": "sync",
+          "from": "proxy-endpoint",
+          "id": "inference",
+          "delta": "unchanged",
+          "to": "fal-model",
+          "label": "upload still + run background removal"
+        },
+        {
+          "kind": "return",
+          "from": "fal-model",
+          "id": "cutout",
+          "delta": "unchanged",
+          "to": "proxy-endpoint",
+          "label": "transparent PNG"
+        },
+        {
+          "kind": "return",
+          "from": "proxy-endpoint",
+          "id": "response",
+          "delta": "unchanged",
+          "to": "stitcher-ui",
+          "label": "image/png response"
+        },
+        {
+          "kind": "self",
+          "from": "stitcher-ui",
+          "id": "preview",
+          "delta": "unchanged",
+          "to": "stitcher-ui",
+          "label": "build Asset preview or white-outline Sticker"
+        },
+        {
+          "kind": "self",
+          "from": "stitcher-ui",
+          "id": "export",
+          "delta": "unchanged",
+          "to": "stitcher-ui",
+          "label": "save PNG or invoke native/browser sharing"
+        }
+      ]
+    }
+  ],
+  "views": [
+    {
+      "id": "architecture",
+      "title": "stick.ai components",
+      "lens": "architecture",
+      "summary": "The client, secure proxy, and fal service boundary.",
+      "scope": {
+        "kind": "all"
+      },
+      "defaultOpen": true,
+      "children": []
+    },
+    {
+      "id": "photo-flow",
+      "title": "Photo to PNG data flow",
+      "lens": "data-flow",
+      "summary": "How an image becomes a cutout and then a saved or shared PNG.",
+      "scope": {
+        "kind": "selection",
+        "flows": [
+          "photo-to-png-flow"
+        ]
+      },
+      "defaultOpen": true,
+      "children": []
+    }
+  ]
+}

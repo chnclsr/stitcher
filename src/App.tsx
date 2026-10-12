@@ -27,7 +27,7 @@ export default function App() {
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
   const [targetObject, setTargetObject] = useState("");
-  const [theme, setTheme] = useState<Theme>(() => localStorage.getItem("stitcher-theme") === "dark" ? "dark" : "light");
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("stick-ai-theme") ?? localStorage.getItem("stitcher-theme")) === "dark" ? "dark" : "light");
   const cameraInput = useRef<HTMLInputElement>(null);
   const [stickerPreviewUrl, setStickerPreviewUrl] = useState("");
   const sourceUrl = useMemo(() => source ? URL.createObjectURL(source) : "", [source]);
@@ -36,7 +36,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#1c2035" : "#fff7ec");
-    localStorage.setItem("stitcher-theme", theme);
+    localStorage.setItem("stick-ai-theme", theme);
   }, [theme]);
 
   useEffect(() => () => {
@@ -136,7 +136,7 @@ export default function App() {
   return (
     <main className="app-shell" data-theme={theme}>
       <header className="topbar">
-        <button className="wordmark" onClick={reset} aria-label="Stitcher home"><span className="brand-mark">s</span><span>stitcher</span></button>
+        <button className="wordmark" onClick={reset} aria-label="stick.ai home"><span className="brand-mark">s</span><span>stick.ai</span></button>
         <div className="header-actions"><span className="cloud-label"><i /> cloud cutout</span><button className="theme-toggle" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>{theme === "light" ? <Moon weight="bold" aria-hidden="true" /> : <Sun weight="bold" aria-hidden="true" />}<span>{theme === "light" ? "Dark" : "Light"} mode</span></button></div>
       </header>
 

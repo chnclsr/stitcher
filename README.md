@@ -1,16 +1,24 @@
-# Stitcher
+# stick.ai
 
 One tap turns a real-world object into a transparent, share-ready digital asset—without editing or switching apps.
 
-Stitcher is a web-native cross-platform app packaged for Android with Capacitor. It processes captured still images through fal in the cloud; it does not perform live or on-device segmentation.
+stick.ai is a web-native cross-platform app packaged for Android with Capacitor. It processes captured still images through fal in the cloud; it does not perform live or on-device segmentation.
 
 ## Current flow
 
 1. Capture a photo with the device camera or choose an image.
-2. Review it, then send it to the Stitcher proxy.
+2. Review it, then send it to the stick.ai proxy.
 3. Preview the transparent PNG on a checkerboard.
 4. Choose Asset or Sticker mode.
 5. Download/save the PNG or open the native share sheet.
+
+## Architecture and data flow
+
+These diagrams describe the current implementation. See [the architecture guide](docs/ARCHITECTURE.md) for component details, API behavior, and limits. The editable PR Lens source is in [`docs/diagrams/graph.json`](docs/diagrams/graph.json).
+
+![stick.ai architecture: camera and photo picker, React app, secure Express proxy, fal background removal, and save/share adapters](docs/diagrams/architecture.svg)
+
+![stick.ai data flow from captured image through fal background removal to a saved or shared PNG](docs/diagrams/capture-flow.svg)
 
 ## Stack
 
@@ -28,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Start the proxy in a second terminal using [backend/README.md](backend/README.md). Vite forwards local `/api` requests to port 8787. Set `VITE_API_BASE_URL` to the deployed proxy URL when frontend and backend use different hosts. Leave it empty for a same-origin deployment.
+Start the proxy in a second terminal using [backend/README.md](backend/README.md). Vite forwards local `/api` requests to port 8788. Set `VITE_API_BASE_URL` to the deployed proxy URL when frontend and backend use different hosts. Leave it empty for a same-origin deployment.
 
 ## Android
 
@@ -55,7 +63,7 @@ Show the installed Android flow: problem (20s), capture and processing (30s), tr
 
 ## Privacy and limits
 
-- The photo is sent to the Stitcher proxy and fal for processing.
+- The photo is sent to the stick.ai proxy and fal for processing.
 - The proxy limits uploads to 10 MB by default, checks file signatures, and rate-limits requests to 12 per minute per client IP.
 - Never put `FAL_KEY` in the web app, Android package, or Git history.
 - Public deployment needs stronger abuse controls and an explicit image-retention policy.
