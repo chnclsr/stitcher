@@ -36,6 +36,7 @@ export default function App() {
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem("stick-ai-theme") ?? localStorage.getItem("stitcher-theme")) === "dark" ? "dark" : "light");
   const cameraInput = useRef<HTMLInputElement>(null);
   const [stickerPreviewUrl, setStickerPreviewUrl] = useState("");
+  const [stickerGenerating, setStickerGenerating] = useState(false);
   const sourceUrl = useMemo(() => source ? URL.createObjectURL(source) : "", [source]);
   const cutoutUrl = useMemo(() => cutout ? URL.createObjectURL(cutout) : "", [cutout]);
 
@@ -53,16 +54,23 @@ export default function App() {
   useEffect(() => {
     if (!cutout || mode !== "sticker") {
       setStickerPreviewUrl("");
+      setStickerGenerating(false);
       return;
     }
     let previewUrl = "";
     let cancelled = false;
+    setStickerPreviewUrl("");
+    setStickerGenerating(true);
     void renderOutput(cutout, "sticker").then((image) => {
       if (cancelled) return;
       previewUrl = URL.createObjectURL(image);
       setStickerPreviewUrl(previewUrl);
+      setStickerGenerating(false);
     }).catch(() => {
-      if (!cancelled) setError("Could not prepare sticker preview.");
+      if (!cancelled) {
+        setError("Could not prepare sticker preview. Try again or save the clean cutout.");
+        setStickerGenerating(false);
+      }
     });
     return () => {
       cancelled = true;
@@ -164,7 +172,7 @@ export default function App() {
             </div>
             <div className="process-rail"><span className="process-step process-photo"><Camera weight="bold" /> Photo</span><ArrowRight className="process-arrow" weight="bold" /><span className="process-step process-cutout"><Scissors weight="bold" /> Cut out</span><ArrowRight className="process-arrow" weight="bold" /><span className="process-step process-share"><ShareNetwork weight="bold" /> Share</span></div>
           </div>
-          <div className="capture-copy"><span className="step-pill"><span>START WITH A PHOTO</span></span><h2>That thing deserves its own sticker.</h2><p>Your mug, your lucky shoes, that tiny plant you keep alive. Pick a photo and we’ll lift your favorite thing right out.</p>
+          <div className="capture-copy"><span className="step-pill"><span>START WITH A PHOTO</span></span><h2>That thing deserves its own sticker.</h2><p>Your mug, your lucky shoes, that tiny plant you keep alive. Pick a photo and weâ€™ll lift your favorite thing right out.</p>
             <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><Camera size={19} weight="bold" aria-hidden="true" /> Take a photo</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose from photos<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
             {error && <p className="error-message">{error}</p>}
           </div>
@@ -177,13 +185,13 @@ export default function App() {
 
         {screen === "review" && sourceUrl && <div className="result-layout">
           <div className="preview-panel"><span className="preview-label">YOUR PHOTO</span><img className="photo-preview" src={sourceUrl} alt="Photo to turn into a sticker" /></div>
-          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><label className="target-field-label" htmlFor="target-object">Describe the object to keep <span>Optional</span></label><input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder="e.g. the red apple near the juice" aria-describedby="target-object-hint target-object-cost" /><p id="target-object-hint" className="field-hint">Point out the exact item in a busy photo. Leave blank to remove the background from the main subject.</p><p id="target-object-cost" className="field-cost">With a prompt: $0.03/image · Standard cutout: $0.018/image.</p><button className="button button-primary full-button" onClick={makeCutout}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message" role="alert">{error}</p>}</div>
+          <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Letâ€™s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p><label className="target-field-label" htmlFor="target-object">Describe the object to keep <span>Optional</span></label><input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder="e.g. the red apple near the juice" aria-describedby="target-object-hint target-object-cost" /><p id="target-object-hint" className="field-hint">Point out the exact item in a busy photo. Leave blank to remove the background from the main subject.</p><p id="target-object-cost" className="field-cost">With a prompt: $0.03/image Â· Standard cutout: $0.018/image.</p><button className="button button-primary full-button" onClick={makeCutout}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message" role="alert">{error}</p>}</div>
         </div>}
 
-        {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>✳</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your object…</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s · securely processed through our server</small></div>}
+        {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>âœ³</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your objectâ€¦</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s Â· securely processed through our server</small></div>}
 
         {screen === "result" && cutoutUrl && <div className="result-layout">
-          <div className="preview-panel preview-checker"><span className="preview-label">YOUR CUTOUT</span><div className="cutout-stage"><img src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" /></div><div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div></div>
+          <div className="preview-panel preview-checker"><span className="preview-label">YOUR CUTOUT</span><div className="cutout-stage" aria-busy={stickerGenerating}><img className={mode === "sticker" && stickerPreviewUrl ? "sticker-rendered" : undefined} src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" />{stickerGenerating && mode === "sticker" && <span className="sticker-pending" role="status">Adding sticker edgeâ€¦</span>}</div><div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div></div>
           <div className="result-controls"><span className="step-pill"><span>MAKE IT YOURS</span></span><h2>One object, two ways.</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={save}><DownloadSimple size={19} weight="bold" aria-hidden="true" /> Save PNG</button><button className="button button-secondary full-button" onClick={share}><ShareNetwork size={19} weight="bold" aria-hidden="true" /> Share</button><button className="text-button" onClick={reset}>Make another</button>{error && <p className="error-message">{error}</p>}</div>
         </div>}
 
@@ -195,34 +203,43 @@ export default function App() {
 
 async function renderOutput(input: Blob, mode: OutputMode): Promise<Blob> {
   if (mode === "asset") return input;
+  const imageUrl = URL.createObjectURL(input);
   const image = new Image();
-  image.src = URL.createObjectURL(input);
-  await image.decode();
-  const width = image.naturalWidth;
-  const height = image.naturalHeight;
-  const radius = Math.min(18, Math.max(2, Math.round(width * 0.012)));
-  const outline = document.createElement("canvas");
-  outline.width = width + radius * 2;
-  outline.height = height + radius * 2;
-  const outlineContext = outline.getContext("2d");
-  if (!outlineContext) throw new Error("Could not prepare sticker outline.");
-  for (let step = 0; step < 20; step += 1) {
-    const angle = (step / 20) * Math.PI * 2;
-    outlineContext.drawImage(image, radius + Math.cos(angle) * radius, radius + Math.sin(angle) * radius);
-  }
-  outlineContext.globalCompositeOperation = "source-in";
-  outlineContext.fillStyle = "#ffffff";
-  outlineContext.fillRect(0, 0, outline.width, outline.height);
+  image.src = imageUrl;
+  try {
+    await image.decode();
+    const width = image.naturalWidth;
+    const height = image.naturalHeight;
+    const scale = Math.min(1, 2048 / Math.max(width, height), Math.sqrt(4_194_304 / (width * height)));
+    const outputWidth = Math.max(1, Math.round(width * scale));
+    const outputHeight = Math.max(1, Math.round(height * scale));
+    const radius = Math.min(32, Math.max(6, Math.round(Math.min(outputWidth, outputHeight) * 0.02)));
+    const outline = document.createElement("canvas");
+    outline.width = outputWidth + radius * 2;
+    outline.height = outputHeight + radius * 2;
+    const outlineContext = outline.getContext("2d");
+    if (!outlineContext) throw new Error("Could not prepare sticker outline.");
+    outlineContext.imageSmoothingEnabled = true;
+    outlineContext.imageSmoothingQuality = "high";
+    for (let step = 0; step < 24; step += 1) {
+      const angle = (step / 24) * Math.PI * 2;
+      outlineContext.drawImage(image, radius + Math.cos(angle) * radius, radius + Math.sin(angle) * radius, outputWidth, outputHeight);
+    }
+    outlineContext.globalCompositeOperation = "source-in";
+    outlineContext.fillStyle = "#ffffff";
+    outlineContext.fillRect(0, 0, outline.width, outline.height);
 
-  const canvas = document.createElement("canvas");
-  canvas.width = outline.width;
-  canvas.height = outline.height;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Could not prepare sticker image.");
-  context.drawImage(outline, 0, 0);
-  context.drawImage(image, radius, radius);
-  URL.revokeObjectURL(image.src);
-  return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Could not export sticker PNG.")), "image/png"));
+    const canvas = document.createElement("canvas");
+    canvas.width = outline.width;
+    canvas.height = outline.height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Could not prepare sticker image.");
+    context.drawImage(outline, 0, 0);
+    context.drawImage(image, radius, radius, outputWidth, outputHeight);
+    return await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Could not export sticker PNG.")), "image/png"));
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
 }
 
 function message(error: unknown) { return error instanceof Error ? error.message : "Something went wrong. Try again."; }

@@ -135,8 +135,10 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
 .text-button { padding: 13px 3px; border: 0; background: transparent; color: var(--blue); font-size: 12px; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; }
 .text-button:hover { color: var(--coral-dark); }
 .preview-checker { background-color: var(--surface); background-image: linear-gradient(45deg, color-mix(in srgb, var(--line) 68%, transparent) 25%, transparent 25%), linear-gradient(-45deg, color-mix(in srgb, var(--line) 68%, transparent) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, color-mix(in srgb, var(--line) 68%, transparent) 75%), linear-gradient(-45deg, transparent 75%, color-mix(in srgb, var(--line) 68%, transparent) 75%); background-size: 22px 22px; background-position: 0 0, 0 11px, 11px -11px, -11px 0; }
-.cutout-stage { width: 100%; height: 290px; display: grid; place-items: center; }
-.cutout-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.cutout-stage { position: relative; width: 100%; height: 290px; min-width: 0; min-height: 0; overflow: hidden; display: grid; place-items: center; }
+.cutout-stage img { width: 100%; height: 100%; min-width: 0; min-height: 0; display: block; object-fit: contain; }
+.cutout-stage img.sticker-rendered { filter: drop-shadow(0 4px 8px rgb(48 42 44 / 16%)); }
+.sticker-pending { position: absolute; right: 8px; bottom: 8px; left: 8px; width: fit-content; max-width: calc(100% - 16px); margin: auto; padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 11px; font-weight: 850; box-shadow: 0 4px 12px rgb(48 42 44 / 12%); }
 .processing-time { position: absolute; right: 24px; bottom: 19px; left: 24px; display: flex; align-items: center; gap: 7px; color: var(--body); font-size: 11px; font-weight: 800; }
 .green-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 2px var(--ink); }
 .time-value { margin-left: auto; }
@@ -212,11 +214,10 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
   .sample-photo img { width: 100%; height: 91px; }
   .sample-photo span { font-size: 12px; }
   .sample-heading span { font-size: 10px; }
-  .result-layout { overflow: visible; }
   .preview-panel { min-height: 280px; padding: 41px 21px; }
   .photo-preview { max-height: 215px; }
   .result-controls { padding: 26px 22px 24px; }
-  .cutout-stage { height: 225px; }
+  .cutout-stage { height: clamp(190px, 58vw, 260px); }
   .trust-row { align-items: flex-start; flex-direction: column; padding: 17px 2px; }
   .processing-card { min-height: 340px; padding: 30px 20px; }
 }
