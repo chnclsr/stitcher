@@ -69,24 +69,31 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
 .capture-card, .result-layout, .processing-card { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow); animation: enter .26s ease-out both; }
 .capture-card { min-height: 370px; display: grid; grid-template-columns: 1.08fr .92fr; }
 .camera-art { position: relative; min-height: 370px; display: grid; place-items: center; overflow: hidden; background: var(--lime); }
-.camera-art::before, .camera-art::after { position: absolute; width: 290px; height: 290px; border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); border-radius: 50%; content: ""; }
-.camera-art::after { width: 220px; height: 220px; }
-.sun { position: absolute; top: calc(50% - 111px); left: calc(50% - 111px); width: 222px; height: 222px; border-radius: 50%; background: var(--coral); }
-.object-sample { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 13px 8px rgb(32 42 69 / 20%)); transform: rotate(-7deg); }
-.pot { width: 110px; height: 117px; border: 3px solid var(--ink); border-radius: 9px 9px 34px 34px; background: var(--blue); clip-path: polygon(7% 0, 93% 0, 81% 100%, 19% 100%); }
-.leaf { width: 59px; height: 76px; margin-bottom: -2px; border: 3px solid var(--ink); border-radius: 100% 0 100% 0; background: var(--surface); transform: rotate(-26deg); }
-.spark { position: absolute; z-index: 4; color: var(--ink); }
-.spark svg { width: 22px; height: 22px; }
-.spark-one { top: 22%; left: 22%; transform: rotate(-12deg); }
-.spark-two { right: 19%; bottom: 22%; transform: rotate(14deg) scale(.75); }
-.frame-corners span { position: absolute; z-index: 3; width: 19px; height: 19px; border-color: var(--ink); border-style: solid; }
-.frame-corners span:nth-child(1) { top: 22px; left: 22px; border-width: 2px 0 0 2px; border-radius: 6px 0 0; }
-.frame-corners span:nth-child(2) { top: 22px; right: 22px; border-width: 2px 2px 0 0; border-radius: 0 6px 0 0; }
-.frame-corners span:nth-child(3) { bottom: 22px; left: 22px; border-width: 0 0 2px 2px; border-radius: 0 0 0 6px; }
-.frame-corners span:nth-child(4) { right: 22px; bottom: 22px; border-width: 0 2px 2px 0; border-radius: 0 0 6px; }
-.camera-dot { position: absolute; z-index: 3; top: 26%; right: 23%; width: 10px; height: 10px; border: 2px solid var(--ink); border-radius: 50%; background: var(--surface); }
-.sticker-stamp { position: absolute; z-index: 5; right: 14%; bottom: 13%; padding: 7px 13px; border: 2px solid var(--ink); border-radius: 44% 56% 48% 52% / 53% 45% 55% 47%; background: var(--surface); color: var(--ink); font-size: 10px; font-weight: 1000; transform: rotate(8deg); transition: transform .2s; }
-.camera-art:hover .sticker-stamp { transform: rotate(-5deg) scale(1.04); }
+.camera-art::before, .camera-art::after { position: absolute; width: 300px; height: 300px; border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent); border-radius: 50%; content: ""; }
+.camera-art::after { width: 244px; height: 244px; }
+.flow-track { position: relative; z-index: 1; width: min(100% - 36px, 500px); display: grid; grid-template-columns: 1fr 22px 1fr 22px 1fr; align-items: center; gap: 7px; }
+.flow-step { min-width: 0; padding: 10px 8px 9px; display: flex; flex-direction: column; align-items: center; border: 2px solid color-mix(in srgb, var(--ink) 17%, transparent); border-radius: 21px; background: color-mix(in srgb, var(--surface) 84%, transparent); box-shadow: 0 7px 0 color-mix(in srgb, var(--ink) 9%, transparent); animation: walkthrough 6.6s ease-in-out infinite; }
+.flow-cutout { animation-delay: 2.2s; }
+.flow-share { animation-delay: 4.4s; }
+.flow-number { align-self: flex-start; color: var(--blue); font-size: 9px; font-weight: 1000; letter-spacing: .08em; }
+.flow-picture { position: relative; width: 90px; height: 104px; margin: 4px 0 8px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: #ffd6bb; }
+.mini-plant, .sticker-mini { display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 5px 3px rgb(32 42 69 / 20%)); }
+.mini-leaf { width: 33px; height: 43px; margin-bottom: -2px; border: 2px solid var(--ink); border-radius: 100% 0 100% 0; background: var(--surface); transform: rotate(-26deg); }
+.mini-pot { width: 58px; height: 59px; border: 2px solid var(--ink); border-radius: 6px 6px 19px 19px; background: var(--blue); clip-path: polygon(7% 0, 93% 0, 81% 100%, 19% 100%); }
+.photo-camera { position: absolute; right: 6px; bottom: 6px; width: 22px; height: 22px; padding: 4px; border-radius: 7px; background: var(--surface); color: var(--ink); }
+.checker-mini { background-color: var(--surface); background-image: linear-gradient(45deg, var(--line) 25%, transparent 25%), linear-gradient(-45deg, var(--line) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, var(--line) 75%), linear-gradient(-45deg, transparent 75%, var(--line) 75%); background-size: 14px 14px; background-position: 0 0, 0 7px, 7px -7px, -7px 0; }
+.cutout-plant { filter: drop-shadow(0 0 0 var(--surface)) drop-shadow(2px 0 0 var(--surface)) drop-shadow(-2px 0 0 var(--surface)) drop-shadow(0 2px 0 var(--surface)) drop-shadow(0 -2px 0 var(--surface)) drop-shadow(0 5px 3px rgb(32 42 69 / 15%)); }
+.cutout-spark { position: absolute; top: 8px; right: 7px; width: 18px; color: var(--coral-dark); }
+.share-picture { background: var(--coral); }
+.sticker-mini { padding: 6px 5px; border: 3px solid var(--surface); border-radius: 16px; background: var(--coral); transform: rotate(-8deg); }
+.sticker-mini .mini-leaf { width: 26px; height: 34px; }
+.sticker-mini .mini-pot { width: 48px; height: 49px; }
+.share-glyph { position: absolute; right: 5px; bottom: 5px; width: 21px; height: 21px; padding: 4px; border-radius: 7px; background: var(--surface); color: var(--blue); }
+.flow-caption { color: var(--ink); font-size: 10px; font-weight: 1000; }
+.flow-arrow { width: 20px; height: 20px; color: var(--ink); animation: arrow-nudge 1.1s ease-in-out infinite alternate; }
+.arrow-two { animation-delay: .55s; }
+.flow-spark { position: absolute; top: 18%; right: 12%; width: 24px; color: var(--coral-dark); animation: sparkle 2.4s ease-in-out infinite; }
+.camera-art:hover .flow-step { animation-play-state: paused; }
 .capture-copy { display: flex; flex-direction: column; justify-content: center; padding: 35px clamp(26px, 4vw, 48px); }
 .step-pill { display: inline-flex; align-items: center; gap: 8px; color: var(--blue); font-size: 10px; font-weight: 1000; letter-spacing: .12em; }
 .step-pill::before { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); content: ""; }
@@ -149,6 +156,9 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
 .processing-orbit > svg { width: 33px; height: 33px; }
 .orbit-dot { position: absolute; top: -5px; left: 34px; width: 12px; height: 12px; border: 2px solid var(--surface); border-radius: 50%; background: var(--lime); transform-origin: 8px 45px; animation: orbit 1.8s linear infinite; }
 @keyframes orbit { to { transform: rotate(360deg); } }
+@keyframes walkthrough { 0%, 24%, 100% { border-color: color-mix(in srgb, var(--ink) 17%, transparent); transform: translateY(0) scale(1); box-shadow: 0 7px 0 color-mix(in srgb, var(--ink) 9%, transparent); } 8%, 16% { border-color: var(--blue); transform: translateY(-6px) scale(1.035); box-shadow: 0 11px 0 color-mix(in srgb, var(--blue) 20%, transparent); } }
+@keyframes arrow-nudge { from { translate: -2px 0; opacity: .6; } to { translate: 3px 0; opacity: 1; } }
+@keyframes sparkle { 0%, 100% { opacity: .7; scale: .88; } 50% { opacity: 1; scale: 1.16; } }
 .progress-track { width: min(270px, 100%); height: 5px; margin: 24px 0 10px; overflow: hidden; border-radius: var(--radius-control); background: var(--line); }
 .progress-track span { width: 40%; height: 100%; display: block; border-radius: inherit; background: var(--coral); animation: load 1.6s ease-in-out infinite alternate; }
 @keyframes load { to { transform: translateX(150%); } }
@@ -179,12 +189,15 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
   .subhead { max-width: 35ch; margin-top: 11px; font-size: 13px; }
   .capture-card, .result-layout { grid-template-columns: 1fr; }
   .camera-art { min-height: 215px; }
-  .camera-art::before { width: 215px; height: 215px; }
-  .camera-art::after { width: 164px; height: 164px; }
-  .sun { top: calc(50% - 82px); left: calc(50% - 82px); width: 164px; height: 164px; }
-  .pot { width: 80px; height: 86px; }
-  .leaf { width: 43px; height: 56px; }
-  .sticker-stamp { right: 12%; bottom: 12%; }
+  .camera-art::before { width: 250px; height: 250px; }
+  .camera-art::after { width: 202px; height: 202px; }
+  .flow-track { width: min(100% - 28px, 430px); grid-template-columns: 1fr 18px 1fr 18px 1fr; gap: 4px; }
+  .flow-step { padding: 8px 5px; border-radius: 17px; }
+  .flow-picture { width: min(100%, 78px); height: 88px; }
+  .flow-number, .flow-caption { font-size: 10px; }
+  .mini-leaf { width: 27px; height: 35px; }
+  .mini-pot { width: 48px; height: 49px; }
+  .flow-arrow { width: 16px; height: 16px; }
   .capture-copy { padding: 24px 22px 25px; }
   .capture-copy h2, .result-controls h2 { margin-top: 11px; font-size: 22px; }
   .capture-actions { margin-top: 17px; }
@@ -204,4 +217,5 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .flow-cutout, .flow-share { animation-delay: 0s; }
 }

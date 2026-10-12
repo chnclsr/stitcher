@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, DownloadSimple, LockKey, Moon, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
+import { ArrowRight, Camera, DownloadSimple, LockKey, Moon, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
 import { captureImage } from "./platform/camera";
 import { saveImage } from "./platform/save";
 import { shareImage } from "./platform/share";
@@ -148,7 +148,16 @@ export default function App() {
         </div>
 
         {screen === "capture" && <div className="capture-card">
-          <div className="camera-art" aria-hidden="true"><div className="sun" /><div className="spark spark-one"><Sparkle weight="fill" /></div><div className="spark spark-two"><Sparkle weight="fill" /></div><div className="frame-corners"><span /><span /><span /><span /></div><div className="object-sample"><div className="leaf" /><div className="pot" /></div><div className="sticker-stamp">made with love</div><div className="camera-dot" /></div>
+          <div className="camera-art" aria-hidden="true">
+            <div className="flow-track">
+              <div className="flow-step flow-photo"><span className="flow-number">01</span><div className="flow-picture"><div className="mini-plant"><div className="mini-leaf" /><div className="mini-pot" /></div><Camera className="photo-camera" weight="fill" /></div><span className="flow-caption">Capture</span></div>
+              <ArrowRight className="flow-arrow arrow-one" weight="bold" />
+              <div className="flow-step flow-cutout"><span className="flow-number">02</span><div className="flow-picture checker-mini"><div className="mini-plant cutout-plant"><div className="mini-leaf" /><div className="mini-pot" /></div><Sparkle className="cutout-spark" weight="fill" /></div><span className="flow-caption">Cut out</span></div>
+              <ArrowRight className="flow-arrow arrow-two" weight="bold" />
+              <div className="flow-step flow-share"><span className="flow-number">03</span><div className="flow-picture share-picture"><div className="sticker-mini"><div className="mini-leaf" /><div className="mini-pot" /></div><ShareNetwork className="share-glyph" weight="fill" /></div><span className="flow-caption">Share</span></div>
+            </div>
+            <Sparkle className="flow-spark" weight="fill" />
+          </div>
           <div className="capture-copy"><span className="step-pill"><span>CAPTURE</span></span><h2>Find something with a shape.</h2><p>A coffee cup, a favorite toy, the little thing on your desk.</p>
             <div className="capture-actions"><button className="button button-primary" onClick={takePhoto}><Camera size={19} weight="bold" aria-hidden="true" /> Open camera</button><input ref={cameraInput} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /><label className="button button-secondary">Choose a photo<input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (file) chooseImage(file); event.currentTarget.value = ""; }} /></label></div>
             {error && <p className="error-message">{error}</p>}
