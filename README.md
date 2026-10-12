@@ -24,6 +24,16 @@ Take a photo, optionally name what should stay, and turn it into a transparent P
 | :---: | :---: |
 | <img src="docs/screenshots/stick-ai-result-asset.png" alt="stick.ai transparent PNG result screen" width="400"> | <img src="docs/screenshots/stick-ai-result-sticker.png" alt="stick.ai sticker white outline mode" width="400"> |
 
+### Single & Multi-Object Extraction
+
+Users can select the extraction mode during the review stage:
+- **Single object**: Retains the entire selection area as a single combined sticker.
+- **Multi-object**: Analyzes the background-removed image with 8-way connected component segmentation to isolate each distinct item (e.g. coffee mug, headphones, sunglasses, plant) into its own individual sticker, complete with an interactive thumbnail carousel and a one-click "Save all stickers" action.
+
+| Multi-Object Selection Review | Multi-Object Result & Strip |
+| :---: | :---: |
+| <img src="docs/screenshots/multi-review-screen.png" alt="Multi-object selection in review" width="400"> | <img src="docs/screenshots/multi-result-screen.png" alt="Extracted separate stickers" width="400"> |
+
 > **Processing today:** photos are sent to fal through the proxy. Processing happens in the cloud; live and on-device segmentation are not implemented.
 
 ## Run locally

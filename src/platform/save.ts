@@ -1,8 +1,8 @@
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Capacitor } from "@capacitor/core";
 
-export async function saveImage(image: Blob): Promise<void> {
-  const filename = `stick-ai-${Date.now()}.png`;
+export async function saveImage(image: Blob, customFilename?: string): Promise<void> {
+  const filename = customFilename ? `${customFilename}.png` : `stick-ai-${Date.now()}.png`;
   if (Capacitor.isNativePlatform()) {
     const base64 = await blobToBase64(image);
     await Filesystem.writeFile({

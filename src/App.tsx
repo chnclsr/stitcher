@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
-import { ArrowRight, Camera, DownloadSimple, Keyboard, LockKey, Moon, Scissors, ShareNetwork, Sparkle, Sun } from "@phosphor-icons/react";
+import { ArrowRight, Camera, DownloadSimple, Keyboard, LockKey, Moon, Scissors, ShareNetwork, Sparkle, Square, SquaresFour, Sun } from "@phosphor-icons/react";
 import { captureImage } from "./platform/camera";
 import { saveImage } from "./platform/save";
 import { shareImage } from "./platform/share";
@@ -8,11 +8,13 @@ import { addStickerToKeyboard } from "./platform/stickerKeyboard";
 import { PolygonPhotoEditor, type SelectionTool } from "./components/PolygonPhotoEditor";
 import { removeBackground } from "./services/cutoutApi";
 import { clipPngToPolygon, cropToPolygon, type NormalizedPoint } from "./services/polygonSelection";
+import { splitTransparentPngIntoObjects } from "./services/multiObjectExtractor";
 
 type Screen = "capture" | "review" | "processing" | "result";
 type OutputMode = "asset" | "sticker";
 type Theme = "light" | "dark";
 type GuidanceMode = "describe" | "outline";
+type TargetMode = "single" | "multi";
 
 const samplePhotos = [
   { name: "Coffee mug", src: new URL("../test-photos/01_coffee_mug.jpg", import.meta.url).href },
@@ -33,6 +35,9 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("capture");
   const [source, setSource] = useState<Blob | null>(null);
   const [cutout, setCutout] = useState<Blob | null>(null);
+  const [cutouts, setCutouts] = useState<Blob[]>([]);
+  const [selectedCutoutIndex, setSelectedCutoutIndex] = useState(0);
+  const [targetMode, setTargetMode] = useState<TargetMode>("single");
   const [mode, setMode] = useState<OutputMode>("asset");
   const [error, setError] = useState("");
   const [elapsed, setElapsed] = useState(0);
@@ -102,6 +107,8 @@ export default function App() {
   function chooseImage(image: Blob) {
     setSource(image);
     setCutout(null);
+    setCutouts([]);
+    setSelectedCutoutIndex(0);
     setTargetObject("");
     setGuidanceMode("describe");
     setSelectionTool("pen");
@@ -142,10 +149,23 @@ export default function App() {
         const selection = await cropToPolygon(source, polygonPoints);
         photo = selection.photo;
         outputPolygon = selection.polygon;
-        prompt = "the object inside the marked outline";
+        prompt = targetMode === "multi"
+          ? "the individual objects inside the marked area"
+          : "the object inside the marked outline";
       }
-      const result = await removeBackground(photo, prompt);
-      setCutout(outputPolygon ? await clipPngToPolygon(result, outputPolygon) : result);
+      const rawResult = await removeBackground(photo, prompt);
+      const clipped = outputPolygon ? await clipPngToPolygon(rawResult, outputPolygon) : rawResult;
+
+      if (targetMode === "multi") {
+        const extracted = await splitTransparentPngIntoObjects(clipped);
+        setCutouts(extracted);
+        setSelectedCutoutIndex(0);
+        setCutout(extracted[0] ?? clipped);
+      } else {
+        setCutouts([clipped]);
+        setSelectedCutoutIndex(0);
+        setCutout(clipped);
+      }
       setScreen("result");
     } catch (reason) {
       setError(message(reason));
@@ -165,6 +185,22 @@ export default function App() {
       setResultNotice("PNG saved.");
     }
     catch (reason) { setError(message(reason)); }
+  }
+
+  async function saveAll() {
+    if (cutouts.length === 0) return;
+    setError("");
+    setResultNotice("");
+    try {
+      for (let i = 0; i < cutouts.length; i++) {
+        const rendered = await renderOutput(cutouts[i], mode);
+        await saveImage(rendered, `stick-ai-object-${i + 1}`);
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      setResultNotice(`Saved all ${cutouts.length} ${mode === "sticker" ? "stickers" : "cutouts"}.`);
+    } catch (reason) {
+      setError(message(reason));
+    }
   }
 
   async function share() {
@@ -193,6 +229,8 @@ export default function App() {
   function reset() {
     setSource(null);
     setCutout(null);
+    setCutouts([]);
+    setSelectedCutoutIndex(0);
     setTargetObject("");
     setGuidanceMode("describe");
     setSelectionTool("pen");
@@ -245,16 +283,44 @@ export default function App() {
             {guidanceMode === "outline" && <span className="drawing-tip">{selectionTool === "pen" ? "Draw around it in one stroke · leave a little room" : "Drag a box around it"}</span>}
           </div>
           <div className="result-controls"><span className="step-pill"><span>REVIEW</span></span><h2>Let’s clear the background.</h2><p>Your photo goes to fal for processing. Usually takes a few seconds.</p>
+
+            <div className="target-mode-container">
+              <span className="mode-section-title">Object extraction mode</span>
+              <div className="target-mode-switch" role="group" aria-label="Choose single or multi object extraction">
+                <button
+                  type="button"
+                  className={targetMode === "single" ? "selected" : ""}
+                  onClick={() => setTargetMode("single")}
+                >
+                  <Square size={16} weight="bold" />
+                  <span>Single object</span>
+                </button>
+                <button
+                  type="button"
+                  className={targetMode === "multi" ? "selected" : ""}
+                  onClick={() => setTargetMode("multi")}
+                >
+                  <SquaresFour size={16} weight="bold" />
+                  <span>Multi-object ({targetMode === "multi" ? "Active" : "Separate"})</span>
+                </button>
+              </div>
+              <p className="mode-section-hint">
+                {targetMode === "multi"
+                  ? "✨ Every distinct object inside your selection will become its own separate sticker."
+                  : "Produces a single sticker containing everything in your selection."}
+              </p>
+            </div>
+
             <div className="guidance-switch" role="group" aria-label="Choose how to identify the object">
               <button type="button" className={guidanceMode === "describe" ? "selected" : ""} onClick={() => { setGuidanceMode("describe"); setError(""); }}>Describe it</button>
               <button type="button" className={guidanceMode === "outline" ? "selected" : ""} onClick={() => { setGuidanceMode("outline"); setError(""); }}>Draw around it</button>
             </div>
             {guidanceMode === "describe" ? <>
-              <label className="target-field-label" htmlFor="target-object">Describe the object to keep <span>Optional</span></label>
-              <input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder="e.g. the red apple near the juice" aria-describedby="target-object-hint" />
-              <p id="target-object-hint" className="field-hint">Point out the exact item in a busy photo. Leave blank to use the main subject.</p>
+              <label className="target-field-label" htmlFor="target-object">{targetMode === "multi" ? "Describe items to keep" : "Describe the object to keep"} <span>Optional</span></label>
+              <input id="target-object" className="target-field" type="text" maxLength={120} value={targetObject} onChange={(event) => setTargetObject(event.target.value)} placeholder={targetMode === "multi" ? "e.g. mug, headphones, glasses (or leave blank to find all)" : "e.g. the yellow mug near the front"} aria-describedby="target-object-hint" />
+              <p id="target-object-hint" className="field-hint">{targetMode === "multi" ? "List items to guide extraction, or leave empty to automatically detect every object." : "Point out the exact item in a busy photo. Leave blank to use the main subject."}</p>
             </> : <>
-              <p className="field-hint polygon-help">Choose a pen stroke for a closer outline, or box for a quick selection.</p>
+              <p className="field-hint polygon-help">{targetMode === "multi" ? "Draw or box around multiple objects. Each item found inside becomes a separate sticker." : "Choose a pen stroke for a closer outline, or box for a quick selection."}</p>
               <div className="selection-tools" role="group" aria-label="Selection drawing tool">
                 <button type="button" className={selectionTool === "pen" ? "selected" : ""} onClick={() => { setSelectionTool("pen"); setPolygonPoints([]); setPolygonComplete(false); }}>Freehand pen</button>
                 <button type="button" className={selectionTool === "box" ? "selected" : ""} onClick={() => { setSelectionTool("box"); setPolygonPoints([]); setPolygonComplete(false); }}>Bounding box</button>
@@ -266,14 +332,45 @@ export default function App() {
               <p className="field-cost">Outlined selection uses guided processing: $0.03/image.</p>
             </>}
             {guidanceMode === "describe" && <p className="field-cost">With a prompt: $0.03/image · Standard cutout: $0.018/image.</p>}
-            <button className="button button-primary full-button" onClick={makeCutout} disabled={guidanceMode === "outline" && (!polygonComplete || polygonPoints.length < 3)}><Sparkle size={19} weight="bold" aria-hidden="true" /> Make my cutout</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message" role="alert">{error}</p>}</div>
+            <button className="button button-primary full-button" onClick={makeCutout} disabled={guidanceMode === "outline" && (!polygonComplete || polygonPoints.length < 3)}><Sparkle size={19} weight="bold" aria-hidden="true" /> {targetMode === "multi" ? "Extract separate stickers" : "Make my cutout"}</button><button className="text-button" onClick={reset}>Choose another photo</button>{error && <p className="error-message" role="alert">{error}</p>}</div>
         </div>}
 
         {screen === "processing" && <div className="processing-card"><div className="processing-orbit"><div className="orbit-dot" /><span>✳</span></div><p className="eyebrow">A LITTLE MAGIC, IN PROGRESS</p><h2>Finding your object…</h2><p>Cleaning the edges and making the background disappear.</p><div className="progress-track"><span /></div><small>{elapsed}s · securely processed through our server</small></div>}
 
         {screen === "result" && cutoutUrl && <div className="result-layout">
-          <div className="preview-panel preview-checker"><span className="preview-label">YOUR CUTOUT</span><div className="cutout-stage" aria-busy={stickerGenerating}><img className={mode === "sticker" && stickerPreviewUrl ? "sticker-rendered" : undefined} src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" />{stickerGenerating && mode === "sticker" && <span className="sticker-pending" role="status">Adding sticker edge…</span>}</div><div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div></div>
-          <div className="result-controls"><span className="step-pill"><span>MAKE IT YOURS</span></span><h2>One object, two ways.</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={addToKeyboard}><Keyboard size={19} weight="bold" aria-hidden="true" /> {Capacitor.isNativePlatform() ? "Add to my keyboard" : "Download sticker PNG"}</button><button className="button button-secondary full-button" onClick={share}><ShareNetwork size={19} weight="bold" aria-hidden="true" /> Share sticker</button><button className="text-button" onClick={save}><DownloadSimple size={17} weight="bold" aria-hidden="true" /> Save PNG instead</button><button className="text-button" onClick={reset}>Make another</button>{resultNotice && <p className="success-message" role="status">{resultNotice}</p>}{error && <p className="error-message" role="alert">{error}</p>}</div>
+          <div className="preview-panel preview-checker">
+            <div className="preview-header-row">
+              <span className="preview-label">{cutouts.length > 1 ? `OBJECT ${selectedCutoutIndex + 1} OF ${cutouts.length}` : "YOUR CUTOUT"}</span>
+              {cutouts.length > 1 && <span className="multi-badge">{cutouts.length} stickers produced</span>}
+            </div>
+            <div className="cutout-stage" aria-busy={stickerGenerating}>
+              <img className={mode === "sticker" && stickerPreviewUrl ? "sticker-rendered" : undefined} src={mode === "sticker" && stickerPreviewUrl ? stickerPreviewUrl : cutoutUrl} alt="Transparent object cutout" />
+              {stickerGenerating && mode === "sticker" && <span className="sticker-pending" role="status">Adding sticker edge…</span>}
+            </div>
+
+            {cutouts.length > 1 && (
+              <div className="multi-cutout-strip" role="group" aria-label="Extracted objects">
+                {cutouts.map((c, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`multi-strip-item${idx === selectedCutoutIndex ? " selected" : ""}`}
+                    onClick={() => {
+                      setSelectedCutoutIndex(idx);
+                      setCutout(c);
+                    }}
+                    aria-label={`View object ${idx + 1}`}
+                  >
+                    <CutoutThumbnail blob={c} />
+                    <span className="multi-item-num">#{idx + 1}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="processing-time"><span className="green-dot" /> Background removed <span className="time-value">{elapsed}s</span></div>
+          </div>
+          <div className="result-controls"><span className="step-pill"><span>MAKE IT YOURS</span></span><h2>{cutouts.length > 1 ? `One photo, ${cutouts.length} stickers.` : "One object, two ways."}</h2><p>Choose a clean cutout or add a classic sticker edge.</p><div className="mode-switch" role="group" aria-label="Output style"><button className={mode === "asset" ? "selected" : ""} onClick={() => setMode("asset")}><span className="mode-icon asset-icon" />Asset<small>Transparent PNG</small></button><button className={mode === "sticker" ? "selected" : ""} onClick={() => setMode("sticker")}><span className="mode-icon sticker-icon" />Sticker<small>White outline</small></button></div><button className="button button-primary full-button" onClick={addToKeyboard}><Keyboard size={19} weight="bold" aria-hidden="true" /> {Capacitor.isNativePlatform() ? "Add to my keyboard" : "Download sticker PNG"}</button>{cutouts.length > 1 && <button className="button button-secondary full-button" onClick={saveAll}><DownloadSimple size={19} weight="bold" aria-hidden="true" /> Save all {cutouts.length} stickers</button>}<button className="button button-secondary full-button" onClick={share}><ShareNetwork size={19} weight="bold" aria-hidden="true" /> Share sticker</button><button className="text-button" onClick={save}><DownloadSimple size={17} weight="bold" aria-hidden="true" /> Save PNG instead</button><button className="text-button" onClick={reset}>Make another</button>{resultNotice && <p className="success-message" role="status">{resultNotice}</p>}{error && <p className="error-message" role="alert">{error}</p>}</div>
         </div>}
 
         <footer className="trust-row"><span><LockKey size={15} weight="bold" aria-hidden="true" /> Your photo is only used to make this cutout</span><span>Made for the things you love.</span></footer>
@@ -352,3 +449,14 @@ async function renderOutput(input: Blob, mode: OutputMode): Promise<Blob> {
 }
 
 function message(error: unknown) { return error instanceof Error ? error.message : "Something went wrong. Try again."; }
+
+function CutoutThumbnail({ blob }: { blob: Blob }) {
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    const objUrl = URL.createObjectURL(blob);
+    setUrl(objUrl);
+    return () => URL.revokeObjectURL(objUrl);
+  }, [blob]);
+  if (!url) return null;
+  return <img src={url} alt="Object thumbnail" />;
+}

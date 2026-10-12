@@ -135,6 +135,22 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 3px sol
 .target-field { width: 100%; min-height: 46px; margin-top: 7px; padding: 0 13px; border: 1px solid var(--line); border-radius: 13px; outline: none; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; transition: border-color .18s, box-shadow .18s; }
 .target-field::placeholder { color: var(--muted); opacity: .85; }
 .target-field:focus { border-color: var(--blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent); }
+.target-mode-container { width: 100%; margin: 0 0 12px; }
+.mode-section-title { display: block; margin-bottom: 6px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .02em; }
+.target-mode-switch { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.target-mode-switch button { min-height: 42px; padding: 7px 11px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--body); font: inherit; font-size: 11px; font-weight: 900; transition: border-color .18s, background-color .18s, color .18s, transform .15s; }
+.target-mode-switch button:hover { transform: translateY(-1px); border-color: var(--coral); }
+.target-mode-switch button.selected { border: 2px solid var(--blue); background: color-mix(in srgb, var(--blue) 12%, var(--surface)); color: var(--blue); font-weight: 1000; box-shadow: 0 2px 8px color-mix(in srgb, var(--blue) 16%, transparent); }
+.mode-section-hint { width: 100%; margin: 6px 0 2px !important; color: var(--muted) !important; font-size: 10px !important; font-weight: 750; line-height: 1.4; }
+
+.preview-header-row { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; align-items: center; justify-content: space-between; z-index: 2; }
+.multi-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: color-mix(in srgb, var(--lime) 48%, var(--surface)); color: var(--ink); font-size: 10px; font-weight: 850; border: 1px solid var(--line); }
+.multi-cutout-strip { position: absolute; bottom: 44px; left: 18px; right: 18px; display: flex; justify-content: center; gap: 9px; z-index: 3; overflow-x: auto; padding: 6px 8px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 90%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); box-shadow: 0 4px 16px rgb(0 0 0 / 7%); }
+.multi-strip-item { position: relative; width: 50px; height: 50px; flex: none; padding: 4px; display: grid; place-items: center; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); cursor: pointer; transition: all .18s; }
+.multi-strip-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.multi-strip-item.selected { border-color: var(--coral); transform: scale(1.08); box-shadow: 0 4px 12px rgb(217 120 96 / 28%); }
+.multi-item-num { position: absolute; bottom: -5px; right: -4px; padding: 1px 5px; border-radius: 999px; background: var(--ink); color: var(--surface); font-size: 8px; font-weight: 900; line-height: 1; }
+
 .guidance-switch { width: 100%; margin: 2px 0 12px; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .guidance-switch button { min-height: 38px; padding: 7px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--body); font: inherit; font-size: 11px; font-weight: 900; }
 .guidance-switch button.selected { background: var(--blue); color: white; box-shadow: 0 2px 6px var(--shadow); }
