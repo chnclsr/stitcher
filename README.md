@@ -1,70 +1,69 @@
-# Stitcher
+# stick.ai
 
 <div align="center">
-  <p><strong>Objects, made shareable.</strong></p>
-  <p>Turn a real-world object into a transparent, share-ready asset in a few taps.</p>
-  <p><sub>REACT · TYPESCRIPT · CAPACITOR · FAL.AI</sub></p>
+  <p><strong>Turn the things around you into shareable cutouts.</strong></p>
+  <p>Capture or choose a photo, name what should stay, then save or share a clean PNG.</p>
+  <p><code>React</code> · <code>TypeScript</code> · <code>Capacitor</code> · <code>fal.ai</code></p>
 </div>
 
-> [!NOTE]
-> Stitcher processes captured still images through fal in the cloud. It does not perform live or on-device segmentation.
+<p align="center">
+  <img src="docs/screenshots/stick-ai-home.png" alt="stick.ai home screen showing the capture, cutout, and share flow" width="100%">
+</p>
 
-## Current flow
+> **Current processing:** stick.ai sends captured still images to fal through a secure proxy. Cutouts are cloud processed; live and on-device segmentation are not implemented.
 
-1. Capture a photo with the device camera or choose an image.
-2. Review it, then send it to the stick.ai proxy.
-3. Preview the transparent PNG on a checkerboard.
-4. Choose Asset or Sticker mode.
-5. Download/save the PNG or open the native share sheet.
+## Make a cutout
 
-## 01 · System architecture
+1. **Capture** with your camera or choose a photo.
+2. **Choose** the object with an optional hint, such as “the red mug near the back.”
+3. **Share** a transparent PNG as a clean asset or a sticker with a white edge.
 
-These diagrams describe the current implementation. See [the architecture guide](docs/ARCHITECTURE.md) for component details, API behavior, and limits. The editable source graph is in [`docs/diagrams/graph.json`](docs/diagrams/graph.json).
+## How it works
 
-![Stitcher architecture: camera and photo picker, React app, secure Express proxy, fal background removal, and save/share adapters](docs/diagrams/architecture.svg)
+![stick.ai architecture: camera and photo picker, React app, secure proxy, fal background removal, and save/share adapters](docs/diagrams/architecture.svg)
 
-![Stitcher data flow from captured image through fal background removal to a saved or shared PNG](docs/diagrams/capture-flow.svg)
+The proxy keeps `FAL_KEY` server-side. See the [architecture guide](docs/ARCHITECTURE.md) for API behavior and limits.
 
-## 02 · Object guidance
+<details>
+<summary>Object selection and recovery diagrams</summary>
 
-Complex photos can contain several objects. Add a short description such as “the red mug near the back”; Stitcher sends that optional hint through the proxy with the photo. The fal key stays server-side.
+An optional object hint travels with the photo. If processing fails, users can retry from review.
 
-![Sequence diagram showing optional target text moving from Stitcher through the secure proxy to fal, then returning a transparent PNG](docs/diagrams/object-guidance.svg)
+![Optional object hint sent through the proxy to fal](docs/diagrams/object-guidance.svg)
 
-## 03 · App lifecycle
+![Capture, review, processing, result, and retry states](docs/diagrams/capture-lifecycle.svg)
 
-The review step lets users add a target description before processing. If background removal fails, they return to review and can retry with the same photo.
+Editable diagram sources: [object guidance](docs/diagrams/object-guidance.html) · [app lifecycle](docs/diagrams/capture-lifecycle.html).
+</details>
 
-![Stitcher app states: capture, review with optional target text, processing, result, and recovery on failure](docs/diagrams/capture-lifecycle.svg)
+## Run locally
 
-## Stack
-
-- React, TypeScript, Vite, responsive CSS
-- Capacitor Camera, Filesystem, and Share plugins
-- Node.js/TypeScript proxy with fal `fal-ai/bria/background/remove`
-- `FAL_KEY` stays on the proxy server
-
-Platform actions live in `src/platform/`. The UI calls `captureImage()`, `saveImage()`, and `shareImage()` rather than calling Capacitor directly.
-
-## Run the web app
+Install dependencies and start the web app:
 
 ```bash
 npm install
 npm run dev
 ```
 
-The cutout flow needs the proxy running too. In a second terminal, run `cd backend` then `npm run dev` (configure `backend/.env` first; see [backend/README.md](backend/README.md)). Vite forwards local `/api` requests to port 8788. Set `VITE_API_BASE_URL` to the deployed proxy URL when frontend and backend use different hosts. Leave it empty for a same-origin deployment.
+Start the proxy in a second terminal. Configure `backend/.env` first; see [backend setup](backend/README.md).
+
+```bash
+cd backend
+npm run dev
+```
+
+Vite forwards local `/api` requests to port 8788. Set `VITE_API_BASE_URL` when frontend and proxy use different hosts; leave it empty for same-origin deployment.
 
 ## Android
 
-Open the project in Android Studio with JDK 17 or 21 and an installed Android SDK, then run:
+Open the project in Android Studio with JDK 17 or 21 and an installed Android SDK. Then run:
 
 ```bash
 npm run android:sync
 npm run android:open
 ```
 
-Build and test camera, save, and share on a physical phone. This host has Java 25 and no Android SDK. Gradle 8.14.3 rejects the Java 25 class format, so APK packaging remains unverified here.
+Test camera, save, and share on a physical phone.
 
 ## Checks
 
@@ -74,13 +73,9 @@ npm run build:proxy
 npm run test:proxy
 ```
 
-## Demo
+## Privacy
 
-Show the installed Android flow: problem (20s), capture and processing (30s), transparent result (30s), save/share (20s), impact and next step (20s). Keep one minute for Q&A. Report measured processing time. Explain that fal processes the captured image in the cloud.
-
-## Privacy and limits
-
-- The photo is sent to the stick.ai proxy and fal for processing.
-- The proxy limits uploads to 10 MB by default, checks file signatures, and rate-limits requests to 12 per minute per client IP.
+- Photos are uploaded to the stick.ai proxy and fal for processing. Confirm provider retention settings before public deployment.
+- The proxy limits uploads to 10 MB, checks file signatures, and rate-limits requests to 12 per minute per client IP.
 - Never put `FAL_KEY` in the web app, Android package, or Git history.
-- Public deployment needs stronger abuse controls and an explicit image-retention policy.
+- Public deployment needs abuse controls and a clear image-retention policy.
