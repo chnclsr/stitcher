@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: stick-ai-fal-proxy-chnclsr
+    runtime: node
+    plan: free
+    branch: developments
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: FAL_KEY
+        sync: false
+      - key: APP_ORIGINS
+        value: https://chnclsr.github.io
+      - key: TRUST_PROXY_HOPS
+        value: "1"

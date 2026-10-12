@@ -72,7 +72,15 @@ Vite forwards `/api` requests to port 8788. Set `VITE_API_BASE_URL` when app and
 
 The `Deploy web app to GitHub Pages` workflow builds and publishes the frontend whenever `developments` changes. After the first successful run, the site URL is `https://chnclsr.github.io/stitcher/`.
 
-In repository **Settings → Pages**, set the publishing source to **GitHub Actions** if it is not already selected. For cutout processing outside the local network, deploy the proxy to a public Node.js host, set `FAL_KEY` on that host, then add repository variable `VITE_API_BASE_URL` with the proxy's HTTPS origin (no trailing slash). GitHub Pages hosts static files only; it cannot run the fal proxy. Keep `FAL_KEY` out of repository variables and the frontend.
+GitHub Pages hosts static files only; it cannot run the fal proxy. To enable public cutouts, deploy the proxy as a [Render Blueprint](https://render.com/docs/blueprints) from this repository. The root [`render.yaml`](render.yaml) creates a Node.js web service for branch `developments`, allows the Pages origin, and prompts for `FAL_KEY` without storing it in Git.
+
+1. In Render, create a Blueprint from `chnclsr/stitcher` and deploy `stick-ai-fal-proxy-chnclsr`.
+2. Enter `FAL_KEY` in Render's secret prompt. Never put it in GitHub variables or frontend code.
+3. Copy the new service's HTTPS origin, such as `https://stick-ai-fal-proxy-chnclsr.onrender.com`.
+4. In GitHub **Settings → Secrets and variables → Actions → Variables**, create `VITE_API_BASE_URL` with that origin and no trailing slash.
+5. Rerun **Deploy web app to GitHub Pages** from the Actions tab so the public frontend uses the proxy URL.
+
+Render's Free web services sleep after 15 minutes without traffic; their first request after sleep can take about a minute to wake. See [Render Free instance limits](https://render.com/docs/free).
 
 ## Android
 
