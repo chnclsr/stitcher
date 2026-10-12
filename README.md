@@ -28,9 +28,13 @@ Take a photo, optionally name what should stay, and turn it into a transparent P
 
 Users can select the extraction mode during the review stage:
 - **Single object**: Retains the entire selection area as a single combined sticker.
-- **Multi-object**: Analyzes the background-removed image with 8-way connected component segmentation to isolate each distinct item (e.g. coffee mug, headphones, sunglasses, plant) into its own individual sticker, complete with an interactive thumbnail carousel and a one-click "Save all stickers" action.
+- **Multi-object**: Analyzes the background-removed image with 8-way connected component segmentation to isolate each distinct item (e.g. smartwatch, keys, AirPods, pocket knife, pen) into its own individual sticker, complete with an interactive thumbnail carousel and a one-click "Save all stickers" action.
 
-| Multi-Object Selection Review | Multi-Object Result & Strip |
+<p align="center">
+  <img src="docs/screenshots/multi-result-6-stickers.png" alt="stick.ai multi-object extraction: One photo, 6 stickers" width="820">
+</p>
+
+| Multi-Object Selection in Review | Multi-Object Result & Strip |
 | :---: | :---: |
 | <img src="docs/screenshots/multi-review-screen.png" alt="Multi-object selection in review" width="400"> | <img src="docs/screenshots/multi-result-screen.png" alt="Extracted separate stickers" width="400"> |
 
