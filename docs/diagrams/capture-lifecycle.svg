@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="capture-lifecycle-title capture-lifecycle-desc" id="capture-lifecycle-root">
+        <title id="capture-lifecycle-title">Stitcher capture lifecycle</title>
+        <desc id="capture-lifecycle-desc">A photo moves through capture, review, processing, and result. A failed processing request returns to review for retry.</desc>
+        <defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #capture-lifecycle-root { --paper: #111624; --ink: #f7f1e8; --muted: #c1cada; --accent: #fa705f; --sans: 'Geist', system-ui, sans-serif; --serif: 'Instrument Serif', Georgia, serif; --mono: 'Geist Mono', ui-monospace, monospace; }
+      #capture-lifecycle-root { color: var(--ink); font-family: var(--sans); }
+      #capture-lifecycle-root .diagram-container { width: 100%; overflow-x: auto; }
+      #capture-lifecycle-root .diagram-container { overflow: visible; }</style>
+          <marker id="capture-lifecycle-next" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#839aff"/></marker>
+          <marker id="capture-lifecycle-retry" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#c1cada"/></marker>
+          <marker id="capture-lifecycle-finish" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0L8 3L0 6Z" fill="#fa705f"/></marker>
+        </defs>
+        <rect width="960" height="600" fill="#111624"/>
+
+        <!-- Transitions are behind states. -->
+        <circle cx="48" cy="190" r="6" fill="#c1cada"/>
+        <path d="M54 190H80" fill="none" stroke="#839aff" stroke-width="2" marker-end="url(#capture-lifecycle-next)"/>
+        <path d="M224 190H280" fill="none" stroke="#839aff" stroke-width="2" marker-end="url(#capture-lifecycle-next)"/>
+        <path d="M456 190H512" fill="none" stroke="#839aff" stroke-width="2" marker-end="url(#capture-lifecycle-next)"/>
+        <path d="M672 190H752" fill="none" stroke="#fa705f" stroke-width="2.5" marker-end="url(#capture-lifecycle-finish)"/>
+        <path d="M900 190H911" fill="none" stroke="#c1cada" stroke-width="1.5"/>
+        <path d="M592 226V286Q592 294 584 294H376Q368 294 368 286V254" fill="none" stroke="#c1cada" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#capture-lifecycle-retry)"/>
+        <circle cx="920" cy="190" r="9" fill="none" stroke="#c1cada" stroke-width="2"/>
+        <circle cx="920" cy="190" r="4" fill="#c1cada"/>
+
+        <!-- Transition labels use opaque masks with clear space around each path. -->
+        <g font-family="'Geist Mono', ui-monospace, monospace" font-size="8" text-anchor="middle" letter-spacing=".03em">
+          <rect x="215" y="102" width="74" height="16" rx="3" fill="#111624"/><text x="252" y="113" fill="#c1cada">photo selected</text>
+          <rect x="439" y="102" width="82" height="16" rx="3" fill="#111624"/><text x="480" y="113" fill="#c1cada">make cutout</text>
+          <rect x="674" y="102" width="76" height="16" rx="3" fill="#111624"/><text x="712" y="113" fill="#c1cada">PNG returned</text>
+          <rect x="411" y="270" width="138" height="16" rx="3" fill="#111624"/><text x="480" y="281" fill="#c1cada">request fails · retry</text>
+        </g>
+
+        <!-- State nodes. -->
+        <g font-family="'Geist', system-ui, sans-serif">
+          <rect x="80" y="154" width="144" height="72" rx="8" fill="#1c2433" stroke="#66728a" stroke-width="1.2"/>
+          <text x="152" y="186" fill="#f7f1e8" text-anchor="middle" font-size="16" font-weight="600">Capture</text>
+          <text x="152" y="208" fill="#c1cada" text-anchor="middle" font-size="10">camera or photo picker</text>
+
+          <rect x="280" y="142" width="176" height="112" rx="8" fill="#1c2433" stroke="#66728a" stroke-width="1.2"/>
+          <text x="368" y="176" fill="#f7f1e8" text-anchor="middle" font-size="16" font-weight="600">Review</text>
+          <rect x="300" y="192" width="136" height="24" rx="12" fill="#252d40" stroke="#839aff" stroke-width="1"/>
+          <text x="368" y="208" fill="#d7dfff" text-anchor="middle" font-size="10" font-weight="500">optional target text</text>
+          <text x="368" y="237" fill="#c1cada" text-anchor="middle" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">up to 120 characters</text>
+
+          <rect x="512" y="154" width="160" height="72" rx="8" fill="#1c2433" stroke="#66728a" stroke-width="1.2"/>
+          <text x="592" y="186" fill="#f7f1e8" text-anchor="middle" font-size="16" font-weight="600">Processing</text>
+          <text x="592" y="208" fill="#c1cada" text-anchor="middle" font-size="10">proxy + fal</text>
+
+          <rect x="752" y="154" width="148" height="72" rx="8" fill="#30252b" stroke="#fa705f" stroke-width="1.5"/>
+          <text x="826" y="186" fill="#fff2e8" text-anchor="middle" font-size="16" font-weight="600">Result</text>
+          <text x="826" y="208" fill="#f4b4aa" text-anchor="middle" font-size="10">preview · save · share</text>
+        </g>
+
+        <!-- Bottom legend strip. -->
+        <g font-family="'Geist Mono', ui-monospace, monospace" font-size="8" fill="#c1cada">
+          <line x1="52" y1="470" x2="96" y2="470" stroke="#839aff" stroke-width="2" marker-end="url(#capture-lifecycle-next)"/><text x="108" y="473">normal transition</text>
+          <line x1="292" y1="470" x2="336" y2="470" stroke="#c1cada" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#capture-lifecycle-retry)"/><text x="348" y="473">recoverable failure</text>
+          <circle cx="560" cy="470" r="7" fill="none" stroke="#c1cada" stroke-width="1.5"/><circle cx="560" cy="470" r="3" fill="#c1cada"/><text x="576" y="473">share-ready outcome</text>
+        </g>
+        <line x1="40" y1="498" x2="920" y2="498" stroke="#394258" stroke-width="1"/>
+        <text x="40" y="518" fill="#8e9bb1" font-family="'Geist Mono', ui-monospace, monospace" font-size="8" letter-spacing=".1em">STITCHER · CAPTURE → REVIEW → CUTOUT → SHARE</text>
+      </svg>
